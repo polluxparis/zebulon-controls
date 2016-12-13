@@ -1,6 +1,6 @@
 {
   "name": "orb-controls",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "lib/index.js",
   "publish-Config": {
     "registry": "http://localhost:4873"

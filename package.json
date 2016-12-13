@@ -1,11 +1,11 @@
 {
   "name": "orb-controls",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "lib/index.js",
   "publish-Config": {
     "registry": "http://localhost:4873"
   },
-"devDependencies": {
+  "devDependencies": {
     "babel-cli": "^6.18.0",
     "babel-preset-react-app": "^2.0.1",
     "orb-grid": "0.0.6",

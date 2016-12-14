@@ -2,7 +2,7 @@ import React from 'react';
 import { ResizableBox } from 'react-resizable';
 import VirtualizedCheckbox from 'react-virtualized-checkbox';
 
-import { twoArraysIntersect } from 'orb-grid/lib/utils/generic';
+import { twoArraysIntersect } from 'zebulon-grid/lib/utils/generic';
 
 const startingHeight = 223;
 const startingWidth = 301;

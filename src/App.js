@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 
-import { PivotGrid } from 'orb-grid';
+import { PivotGrid } from 'zebulon-grid';
 
 import logo from './logo.svg';
 import './App.css';

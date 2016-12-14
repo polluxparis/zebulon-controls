@@ -1,8 +1,8 @@
 import { connect } from 'react-redux';
 
 import FilterPanel from '../components/FilterPanel';
-import { getFieldValues, getFilters } from 'orb-grid/lib/selectors';
-import { addFilter, deleteFilter } from 'orb-grid/lib/actions';
+import { getFieldValues, getFilters } from 'zebulon-grid/lib/selectors';
+import { addFilter, deleteFilter } from 'zebulon-grid/lib/actions';
 
 const mapStateToProps = (state, ownProps) => ({
   values: getFieldValues(state)(ownProps.field),

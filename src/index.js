@@ -4,8 +4,8 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
 
-import { reducer, hydrateStore } from 'orb-grid';
-import * as actions from 'orb-grid/lib/actions';
+import { reducer, hydrateStore } from 'zebulon-grid';
+import * as actions from 'zebulon-grid/lib/actions';
 
 import App from './App';
 import './index.css';

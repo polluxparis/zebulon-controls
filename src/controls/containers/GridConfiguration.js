@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
-import { getRowFields, getColumnFields, getAvailableFields } from 'zebulon-grid/lib/selectors';
+import { getRowFields, getColumnFields, getAvailableFields } from 'zebulon-grid/lib/commonjs/selectors';
 import GridConfiguration from '../components/GridConfiguration';
-import { moveField, toggleDatafield } from 'zebulon-grid/lib/actions';
+import { moveField, toggleDatafield } from 'zebulon-grid/lib/commonjs/actions';
 
 const mapStateToProps = state => ({
   datafields: state.datafields,

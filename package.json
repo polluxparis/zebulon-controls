@@ -41,6 +41,7 @@
   "dependencies": {
     "react-overlays": "^0.6.10",
     "react-resizable": "^1.4.5",
-    "react-virtualized-checkbox": "^2.0.3"
+    "react-virtualized-checkbox": "^2.0.3",
+    "zebulon-grid": "0.0.11"
   }
 }

@@ -5615,9 +5615,9 @@ yargs@~3.10.0:
     decamelize "^1.0.0"
     window-size "0.1.0"
 
-zebulon-grid@0.0.10:
-  version "0.0.10"
-  resolved "http://localhost:4873/zebulon-grid/-/zebulon-grid-0.0.10.tgz#3c8bace992b343856b0a9e81b09c7582379f9f37"
+zebulon-grid@0.0.11:
+  version "0.0.11"
+  resolved "http://localhost:4873/zebulon-grid/-/zebulon-grid-0.0.11.tgz#30930e9055a2117c083b9ef249bd739f0dfc893b"
   dependencies:
     classnames "^2.2.5"
     react "15.4.1"

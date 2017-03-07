@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 
-import { PivotGrid } from 'zebulon-grid';
+import { PivotGridWithoutDndContext } from 'zebulon-grid';
 
 import logo from './logo.svg';
 import './App.css';
@@ -18,7 +18,9 @@ class App extends Component {
           <h2>Welcome to React</h2>
         </div>
         <GridControls />
-        <PivotGrid customFunctions={this.props.customFunctions}/>
+        <PivotGridWithoutDndContext
+          customFunctions={this.props.customFunctions}
+        />
       </div>
     );
   }

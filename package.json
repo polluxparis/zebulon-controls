@@ -1,6 +1,6 @@
 {
   "name": "zebulon-controls",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "main": "lib/index.js",
   "publish-Config": {
     "registry": "http://localhost:4873"

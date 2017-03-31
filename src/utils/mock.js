@@ -13,8 +13,8 @@ export function getMockDatasource(dataRepetition = 1, nToto = 10, nTiti = 10) {
           obj.toto_lb = `toto ${String(o)}`;
           obj.titi = `titi ${String(i)}`;
           obj.tutu = String(u);
-          obj.qty = u + (10 * i) + (100 * o); // +9999999999.1234567890123456
-          obj.amt = u + (10 * i) + (100 * o);// +9999999999.1234567890123456
+          obj.qty = u + 10 * i + 100 * o; // +9999999999.1234567890123456
+          obj.amt = u + 10 * i + 100 * o; // +9999999999.1234567890123456
           res.push(obj);
         }
       }
@@ -44,30 +44,30 @@ export const basicConfig = {
   cellWidth: 100,
   theme: 'green',
   toolbar: {
-    visible: true,
+    visible: true
   },
   grandTotal: {
     rowsvisible: false,
-    columnsvisible: false,
+    columnsvisible: false
   },
   subTotal: {
     visible: false,
     collapsed: false,
-    collapsible: false,
+    collapsible: false
   },
   rowSettings: {
     subTotal: {
       visible: false,
       collapsed: false,
-      collapsible: false,
-    },
+      collapsible: false
+    }
   },
   columnSettings: {
     subTotal: {
       visible: false,
       collapsed: false,
-      collapsible: false,
-    },
+      collapsible: false
+    }
   },
   fields: [
     {
@@ -75,8 +75,8 @@ export const basicConfig = {
       id: 'toto',
       caption: 'Toto',
       sort: {
-        order: 'asc',
-      },
+        order: 'asc'
+      }
     },
     // {
     //     name: '1',
@@ -98,45 +98,51 @@ export const basicConfig = {
     // },
     {
       id: 'titi',
-      caption: 'Titi',
+      caption: 'Titi'
     },
     {
       id: 'tutu',
-      caption: 'Tutu',
-    },
-  // {
-  //     name: '4',
-  //     caption: 'Category',
-  //     sort: {
-  //         customfunc: function(a, b) {
-  //             if(a.trim() == 'Touch Screen Phones'){
-  //              return -1
-  //             }
-  //             if(a < b) return -1
-  //             if(a > b) return 1
-  //             return 0
-  //         }
-  //     }
-  // },
+      caption: 'Tutu'
+    }
+    // {
+    //     name: '4',
+    //     caption: 'Category',
+    //     sort: {
+    //         customfunc: function(a, b) {
+    //             if(a.trim() == 'Touch Screen Phones'){
+    //              return -1
+    //             }
+    //             if(a < b) return -1
+    //             if(a > b) return 1
+    //             return 0
+    //         }
+    //     }
+    // },
   ],
   datafields: [
     {
-      id: 'qty',
+      accessor: 'qty',
       caption: 'Quantity',
-      aggregateFunc: 'sum',
+      aggregation: 'sum'
     },
     {
-      id: 'amt',
+      accessor: 'amt',
       caption: 'Amount',
-      aggregateFunc: 'sum',
-      aggregateFuncName: 'whatever',
-      formatFunc: (value) => {
+      aggregation: 'sum',
+      aggregationName: 'whatever',
+      format: value => {
         if (value || value === 0) {
           return `${Number(value).toFixed(0)} $`;
         }
         return '';
-      },
+      }
     },
+    {
+      accessor: row => row.amt / row.qty,
+      id: 'price',
+      caption: 'Price',
+      aggregation: 'avg'
+    }
   ],
   columns: ['Titi'],
   rows: ['Toto', 'Tutu'],
@@ -149,5 +155,5 @@ export const basicConfig = {
     // 'Category': { 'Does Not Match': 'D' },
     // 'Amount': { '>': 40 },
     // 'Quantity': [4, 8, 12]
-  },
+  }
 };

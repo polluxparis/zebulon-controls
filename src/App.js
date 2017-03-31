@@ -20,6 +20,9 @@ class App extends Component {
         <GridControls />
         <PivotGridWithoutDndContext
           customFunctions={this.props.customFunctions}
+          drilldown={cellInfos => {
+            console.log(cellInfos);
+          }}
         />
       </div>
     );

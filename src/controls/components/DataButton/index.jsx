@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 
 export default class DataButton extends Component {
-
   constructor(props) {
     super(props);
     this.onClick = this.onClick.bind(this);
@@ -14,7 +13,7 @@ export default class DataButton extends Component {
 
   render() {
     const { active, field } = this.props;
-    const fieldAggFunc = <small>{` (${field.aggregateFuncName}) `}</small>;
+    const fieldAggFunc = <small>{` (${field.aggregationName}) `}</small>;
     const inactiveStyle = {
       backgroundColor: '#cccccc',
       border: 'solid #cccccc 1px',
@@ -22,7 +21,7 @@ export default class DataButton extends Component {
       padding: 4,
       cursor: 'default',
       outline: 'none',
-      fontSize: 'medium',
+      fontSize: 'medium'
     };
     const activeStyle = {
       backgroundColor: 'white',
@@ -31,7 +30,7 @@ export default class DataButton extends Component {
       padding: 4,
       cursor: 'default',
       outline: 'none',
-      fontSize: 'medium',
+      fontSize: 'medium'
     };
     return (
       <button

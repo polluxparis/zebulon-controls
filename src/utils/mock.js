@@ -13,8 +13,8 @@ export function getMockDatasource(dataRepetition = 1, nToto = 10, nTiti = 10) {
           obj.toto_lb = `toto ${String(o)}`;
           obj.titi = `titi ${String(i)}`;
           obj.tutu = String(u);
-          obj.qty = u + 10 * i + 100 * o; // +9999999999.1234567890123456
-          obj.amt = u + 10 * i + 100 * o; // +9999999999.1234567890123456
+          obj.qty = u + 10 * i + 100 * o + 1; // +9999999999.1234567890123456
+          obj.amt = u + 10 * i + 100 * o + 1; // +9999999999.1234567890123456
           res.push(obj);
         }
       }
@@ -42,40 +42,43 @@ export const basicConfig = {
   height: 601,
   cellHeight: 30,
   cellWidth: 100,
-  theme: 'green',
-  toolbar: {
-    visible: true
-  },
-  grandTotal: {
-    rowsvisible: false,
-    columnsvisible: false
-  },
-  subTotal: {
-    visible: false,
-    collapsed: false,
-    collapsible: false
-  },
-  rowSettings: {
-    subTotal: {
-      visible: false,
-      collapsed: false,
-      collapsible: false
-    }
-  },
-  columnSettings: {
-    subTotal: {
-      visible: false,
-      collapsed: false,
-      collapsible: false
-    }
-  },
+  // theme: 'green',
+  // toolbar: {
+  //   visible: true,
+  // },
+  // grandTotal: {
+  //   rowsvisible: false,
+  //   columnsvisible: false,
+  // },
+  // subTotal: {
+  //   visible: false,
+  //   collapsed: false,
+  //   collapsible: false,
+  // },
+  // rowSettings: {
+  //   subTotal: {
+  //     visible: false,
+  //     collapsed: false,
+  //     collapsible: false,
+  //   },
+  // },
+  // columnSettings: {
+  //   subTotal: {
+  //     visible: false,
+  //     collapsed: false,
+  //     collapsible: false,
+  //   },
+  // },
   fields: [
     {
       name: 'toto_lb',
-      id: 'toto',
+      accessor: 'toto',
       caption: 'Toto',
       sort: {
-        order: 'asc'
+        // order: 'asc',
+        accessor: 'toto_lb'
+        // accessor: row => row.toto_lb
+        // custom: (a, b) => a - b
       }
     },
     // {
@@ -97,11 +100,11 @@ export const basicConfig = {
     //     },
     // },
     {
-      id: 'titi',
+      accessor: 'titi',
       caption: 'Titi'
     },
     {
-      id: 'tutu',
+      accessor: 'tutu',
       caption: 'Tutu'
     }
     // {
@@ -122,6 +125,7 @@ export const basicConfig = {
   datafields: [
     {
       accessor: 'qty',
+      id: 'qty',
       caption: 'Quantity',
       aggregation: 'sum'
     },
@@ -138,15 +142,21 @@ export const basicConfig = {
       }
     },
     {
-      accessor: row => row.amt / row.qty,
       id: 'price',
       caption: 'Price',
-      aggregation: 'avg'
+      aggregation: 'avg',
+      accessor: row => row.amt / row.qty,
+      format: value => {
+        if (!isNaN(value)) {
+          return `${Number(value).toFixed(2)} $`;
+        }
+        return value;
+      }
     }
   ],
   columns: ['Titi'],
   rows: ['Toto', 'Tutu'],
-  data: ['Quantity'],
+  data: ['Quantity', 'Amount', 'Price'],
   // drilldown: (cell) => { console.log('drilldown (config) on cell', cell); },
   preFilters: {
     // 'Titi': ['titi0']

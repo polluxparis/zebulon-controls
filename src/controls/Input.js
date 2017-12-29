@@ -63,37 +63,30 @@ export class Input extends Component {
       let value = e.target.value;
       let validatedValue = this.validateInput(value);
       if (this.props.dataType === "boolean") {
-        if (this.props.inputType === "filter" && this.state.value === false) {
+        if (this.props.inputType === "filter" && this.state.value === false)
           validatedValue = null;
-        } else {
-          validatedValue = !this.state.value;
-        }
+        else validatedValue = !this.state.value;
         value = validatedValue;
       }
       if (validatedValue !== undefined) {
-        this.setState({ formatedValue: value, value: validatedValue });
+        // this.setState({ formatedValue: value, value: validatedValue });
         if (this.props.dataType === "date") {
           validatedValue = stringToDate(validatedValue, this.props.format);
           if (validatedValue !== undefined) {
-            this.setState({
-              value: validatedValue,
-              formatedValue: formatValue(
-                validatedValue,
-                this.props.dataType,
-                this.props.format
-              )
-            });
+            value = formatValue(
+              validatedValue,
+              this.props.dataType,
+              this.props.format
+            );
           }
         }
-        // if (    validatedValue !== undefined) {
-        if (this.props.row && this.props.id) {
-          this.props.row[this.props.id] = validatedValue;
-        }
-        if (this.props.onChange) {
-          this.props.onChange(validatedValue);
-        }
-        //   }
       }
+      // if (    validatedValue !== undefined) {
+      if (this.props.row && this.props.id)
+        this.props.row[this.props.id] = validatedValue;
+      if (this.props.onChange)
+        if (this.props.onChange(validatedValue) === false) return;
+      this.setState({ formatedValue: value, value: validatedValue });
     }
   };
   handleBlur = e => {
@@ -182,7 +175,7 @@ export class Input extends Component {
           type={type}
           key={this.props.id}
           className={this.props.className || "zebulon-input"}
-          autoFocus={this.props.inputType !== "filter"}
+          autoFocus={this.props.hasFocus && this.props.inputType !== "filter"}
           style={style}
           value={this.state.formatedValue}
           checked={this.state.value || false}

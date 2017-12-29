@@ -36,12 +36,12 @@ export class ScrollableGrid extends ScrollableArea {
     if (range.start.rows === undefined) {
       range.start = range.end;
     }
-    this.selectRange(range);
+    return this.selectRange(range);
   };
   selectRange = range => {
     // this.setState({ selectedRange: range });
     if (this.props.selectRange) {
-      this.props.selectRange(range);
+      return this.props.selectRange(range);
     }
   };
 
@@ -115,17 +115,22 @@ export class ScrollableGrid extends ScrollableArea {
   handleNavigationKeys = e => {
     if (e.which === 65 && (e.metaKey || e.ctrlKey)) {
       // ctrl+A
-      this.selectRange({
-        start: {
-          columns: this.lastIndex(AxisType.COLUMNS, -1),
-          rows: this.lastIndex(AxisType.ROWS, -1)
-        },
-        end: {
-          columns: this.lastIndex(AxisType.COLUMNS, 1),
-          rows: this.lastIndex(AxisType.ROWS, 1)
-        }
-      });
       e.preventDefault();
+      if (
+        this.selectRange({
+          start: {
+            columns: this.lastIndex(AxisType.COLUMNS, -1),
+            rows: this.lastIndex(AxisType.ROWS, -1)
+          },
+          end: {
+            columns: this.lastIndex(AxisType.COLUMNS, 1),
+            rows: this.lastIndex(AxisType.ROWS, 1)
+          }
+        }) === false
+      ) {
+        return false;
+      }
+
       // } else if (e.which === 13) {
       //   console.log("enter", e);
     } else if ((e.which > 32 && e.which < 41) || e.which === 9) {
@@ -167,9 +172,12 @@ export class ScrollableGrid extends ScrollableArea {
         cell = this.endCell(axis, direction);
       }
       // selection
-      this.selectCell(cell, e.shiftKey && e.key !== "Tab");
-      this.scrollOnKey(cell, axis, direction);
       e.preventDefault();
+      if (this.selectCell(cell, e.shiftKey && e.key !== "Tab") === false) {
+        return false;
+      }
+      this.scrollOnKey(cell, axis, direction);
+
       return { ...cell, axis, direction };
     }
   };
@@ -192,13 +200,13 @@ export class ScrollableGrid extends ScrollableArea {
       if (ix === null && positionRatio !== null) {
         const lastColumn = meta[meta.length - 1];
         position =
-          (lastColumn.position + lastColumn.width * !lastColumn.hidden) *
+          (lastColumn.position + (lastColumn.width || 0) * !lastColumn.hidden) *
           positionRatio;
         const column = meta.find(
           column =>
             column.width !== 0 &&
             position >= column.position &&
-            position <= column.position + column.width
+            position <= column.position + (column.width || 0)
         );
         shift = column.position - position;
         direction = 1;
@@ -216,7 +224,7 @@ export class ScrollableGrid extends ScrollableArea {
         const column = meta.find(
           column =>
             position >= column.position &&
-            position <= column.position + column.width
+            position <= column.position + (column.width || 0)
         );
         startIndex = column.index_;
 
@@ -258,10 +266,12 @@ export class ScrollableGrid extends ScrollableArea {
       };
     }
     if (direction) {
-      this.setState({ scroll: newScroll });
       if (this.props.onScroll) {
-        this.props.onScroll(newScroll);
+        if (this.props.onScroll(newScroll) === false) {
+          return false;
+        }
       }
+      this.setState({ scroll: newScroll });
       return true;
     }
   };

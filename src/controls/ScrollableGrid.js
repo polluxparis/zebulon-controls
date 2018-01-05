@@ -20,7 +20,50 @@ export class ScrollableGrid extends ScrollableArea {
       selectedRange: { start: {}, end: {} }
     };
   }
-  // componentWillReceiveProps(newProps) {}
+  componentWillReceiveProps(nextProps) {
+    if (
+      nextProps.height !== this.props.height ||
+      nextProps.width !== this.props.width
+    ) {
+      const ratios = this.getRatios(nextProps);
+      if (
+        nextProps.width !== this.props.width &&
+        this.ratios.horizontal.position >
+          1 - Math.min(ratios.horizontal.display, 1)
+      ) {
+        // console.log("scroll", scroll);
+        this.onScroll(
+          AxisType.COLUMNS,
+          null,
+          null,
+          1 - Math.min(ratios.horizontal.display, 1)
+        );
+      }
+      if (
+        nextProps.height !== this.props.height &&
+        this.ratios.vertical.position > 1 - Math.min(ratios.vertical.display, 1)
+      ) {
+        // console.log("scroll", scroll);
+        this.onScroll(
+          AxisType.ROWS,
+          null,
+          null,
+          1 - Math.min(ratios.vertical.display, 1)
+        );
+      }
+    }
+    if (
+      this.props.scroll !== nextProps.scroll &&
+      (nextProps.scroll.rows.index !== this.state.scroll.rows.index ||
+        nextProps.scroll.rows.direction !== this.state.scroll.rows.direction ||
+        nextProps.scroll.columns.index !== this.state.scroll.columns.index ||
+        nextProps.scroll.columns.direction !==
+          this.state.scroll.columns.direction)
+    ) {
+      this.setState({ scroll: nextProps.scroll });
+    }
+  }
+  componentWillMount() {}
   // ------------------------------------------------
   // selected range
   // ------------------------------------------------

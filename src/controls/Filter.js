@@ -52,7 +52,9 @@ export class Filter extends Component {
       filter: { ...props.filter },
       rowCount: props.items.length,
       startIndex: 0,
-      checkAll: false
+      checkAll: false,
+      maxRows: props.maxRows || 10,
+      rowHeight: props.rowHeight || 20
     };
   }
   componentWillReceiveProps(nextProps) {
@@ -73,12 +75,17 @@ export class Filter extends Component {
 
   onWheel = e => {
     e.preventDefault();
-    const direction = Math.sign(e.deltaY);
-    const startIndex =
-      direction === 1
-        ? Math.min(this.state.startIndex + 1, this.state.rowCount - 10)
-        : Math.max(this.state.startIndex - 1, 0);
-    this.onScroll(startIndex);
+    if (this.state.maxRows < this.state.rowCount) {
+      const direction = Math.sign(e.deltaY);
+      const startIndex =
+        direction === 1
+          ? Math.min(
+              this.state.startIndex + 1,
+              this.state.rowCount - this.state.maxRows
+            )
+          : Math.max(this.state.startIndex - 1, 0);
+      this.onScroll(startIndex);
+    }
   };
   filterItems = value => {
     const v = value.toLowerCase();
@@ -132,7 +139,8 @@ export class Filter extends Component {
     this.props.onOk(filter);
   };
   render() {
-    const rowHeight = 20;
+    // const rowHeight = 20;
+    const { maxRows, rowHeight } = this.state;
     return (
       <div
         style={{
@@ -170,7 +178,7 @@ export class Filter extends Component {
           Select all
           <FilterValues
             width="inherit"
-            height={10 * rowHeight}
+            height={maxRows * rowHeight}
             style={{ width: "98%", justifyContent: "space-between" }}
             rowCount={this.state.rowCount}
             rowHeight={rowHeight}

@@ -148,12 +148,71 @@ export const range = (a, b) =>
   );
 // date functions
 // export const isDate = d => d instanceof Date && !isNaN(d.valueOf());
+export const formatValue = (value, fmt, ndec) => {
+  // format not managed yet
+  if (isNullOrUndefined(value)) {
+    return null;
+  } else if (isDate(value)) {
+    return dateToString(value, fmt);
+  } else if (isNumber(value)) {
+    return numberToString(value, fmt, ndec);
+  } else if (typeof value === "object") {
+    return "[object]";
+  } else if (typeof value === "function") {
+    return "[function]";
+  } else {
+    return value;
+  }
+};
+export const numberToString = (n, fmt, ndec) => {
+  let v = n,
+    v2 = "";
+  // if (!isNullOrUndefined(ndec)) {
+  const nf = n.toFixed(ndec);
+  const nn = nf.length - n.toString().length;
+  v = Number(nf);
+  if (nn > 0) {
+    v2 = nf.slice(nf.length - nn);
+    // }
+  } else {
+    if (!fmt || fmt === "LocaleString") {
+      v = v.toLocaleString();
+    } else if (fmt === "String") {
+      v = v.toString();
+    }
+  }
+  return v + v2;
+};
+
 export const dateToString = (d, fmt) => {
   // format not managed yet
   if (!isDate(d)) {
     return undefined;
   }
-  return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+  if (!fmt || fmt === "LocaleDateString") return d.toLocaleDateString();
+  else if (fmt === "LocaleString") return d.toLocaleString();
+  else if (fmt === "LocaleTimeString") return d.toLocaleTimeString();
+  else if (fmt === "ISO") return d.toISOString();
+  else if (fmt === "UTC") return d.toUTCString();
+  const date = {
+    dd: String(d.getDate()).padStart(2, "0"),
+    mm: String(d.getMonth() + 1).padStart(2, "0"),
+    yy: String(d.getFullYear()),
+    hh: String(d.getHours()).padStart(2, "0"),
+    mi: String(d.getMinutes()).padStart(2, "0"),
+    ss: String(d.getSeconds()).padStart(2, "0")
+  };
+  const format = fmt.split(/[\/: ]/);
+  let index = 0,
+    dd = "";
+  format.forEach(f => {
+    const x = date[f.slice(0, 2)];
+    if (x) {
+      index += f.length + 1;
+      dd += x + (fmt[index - 1] || " ");
+    }
+  });
+  return dd.slice(0, dd.length - 1);
 };
 
 const daysByMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];

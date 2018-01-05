@@ -26,7 +26,6 @@
 /*-----------------------------------------------*/
 .zebulon-contextmenu-item {
 	padding: 2px;
-	background-color: white;
 	height: 20px;
 	width: stretch;
 	min-width: 50px;
@@ -53,6 +52,8 @@
 	border: solid 0.05em rgba(0, 0, 0, 0.5);
 	cursor: pointer;
 	z-index: 100;
+	padding: 2px;
+	background-color: white;
 }
 /*-----------------------------------------------*/
 .zebulon-scrollbar-bar {

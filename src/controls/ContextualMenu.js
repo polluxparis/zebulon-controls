@@ -140,7 +140,7 @@ export class ContextualMenu extends Component {
 		window.removeEventListener("MENU_EVENT", this.handleEvent);
 	}
 	close = () => {
-		this.setState({ menu: {} });
+		this.setState({ menu: null });
 	};
 	handleEvent = e => {
 		const { position, menuId, data, gridId } = e.detail;
@@ -180,8 +180,25 @@ export class ContextualMenu extends Component {
 				}
 				this.setState({ menu: this.state.menu });
 			} else if (item.onClick) {
-				item.onClick(data, item);
-				this.close();
+				const menuItem = item.onClick(data, item);
+				if (
+					item.type === "sub-menu" &&
+					menuItem &&
+					menuItem["$$typeof"].toString() === "Symbol(react.element)"
+				) {
+					const newItem = {
+						type: "jsx",
+						level: item.level + 1,
+						content: menuItem,
+						navigation: true
+					};
+					item.children.push(newItem);
+					this.openedLevel[item.level] = newItem;
+					item.opened = true;
+					this.setState({ menu: this.state.menu });
+				} else {
+					this.close();
+				}
 			}
 
 			// console.log("internal menu event", e.target, item);
@@ -228,7 +245,7 @@ export class ContextualMenuClient extends Component {
 		if (e.button === 2) {
 			e.preventDefault();
 			e.persist();
-			e.stopPropagation();
+			// e.stopPropagation();
 			const event = new CustomEvent(MENU_EVENT, {
 				detail: {
 					gridId: this.props.gridId,

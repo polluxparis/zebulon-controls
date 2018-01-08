@@ -248,3 +248,6 @@ export const isNavigationKey = e =>
   e.which === 9 || // tab
   e.which === 27 || // escape
   (e.which === 65 && (e.metaKey || e.ctrlKey));
+export const isZoom = e =>
+  (e.metaKey || e.ctrlKey) *
+  (e.key === "+" || e.key === "=" || -(e.key === "-" || e.key === "_"));

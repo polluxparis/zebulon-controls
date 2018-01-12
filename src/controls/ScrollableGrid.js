@@ -31,7 +31,6 @@ export class ScrollableGrid extends ScrollableArea {
         this.ratios.horizontal.position >
           1 - Math.min(ratios.horizontal.display, 1)
       ) {
-        // console.log("scroll", scroll);
         this.onScroll(
           AxisType.COLUMNS,
           null,
@@ -43,7 +42,6 @@ export class ScrollableGrid extends ScrollableArea {
         nextProps.height !== this.props.height &&
         this.ratios.vertical.position > 1 - Math.min(ratios.vertical.display, 1)
       ) {
-        // console.log("scroll", scroll);
         this.onScroll(
           AxisType.ROWS,
           null,
@@ -82,7 +80,6 @@ export class ScrollableGrid extends ScrollableArea {
     return this.selectRange(range);
   };
   selectRange = range => {
-    // this.setState({ selectedRange: range });
     if (this.props.selectRange) {
       return this.props.selectRange(range);
     }
@@ -154,7 +151,53 @@ export class ScrollableGrid extends ScrollableArea {
     cell[toAxis(axis)] = this.lastIndex(axis, direction);
     return cell;
   };
-
+  navigationKeyHandler = e => {
+    if (!((e.which > 32 && e.which < 41) || e.which === 9)) {
+      return false;
+    }
+    let direction, cell, axis;
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      if (
+        document.activeElement.tagName === "SELECT" ||
+        document.activeElement.tagName === "TEXTAREA"
+      ) {
+        return false;
+      }
+      direction = e.key === "ArrowDown" ? 1 : -1;
+      axis = AxisType.ROWS;
+      cell = this.nextCell(axis, direction, 1);
+    } else if (
+      e.key === "ArrowRight" ||
+      e.key === "ArrowLeft" ||
+      e.key === "Tab"
+    ) {
+      if (
+        (document.activeElement.tagName === "INPUT" ||
+          document.activeElement.tagName === "TEXTAREA") &&
+        e.key !== "Tab"
+      ) {
+        return false;
+      }
+      direction =
+        e.key === "ArrowRight" || (e.key === "Tab" && !e.shiftKey) ? 1 : -1;
+      axis = AxisType.COLUMNS;
+      cell = this.nextCell(axis, direction, 1);
+    } else if (e.key === "PageUp" || e.key === "PageDown") {
+      direction = e.key === "PageDown" ? 1 : -1;
+      axis = e.altKey ? AxisType.COLUMNS : AxisType.ROWS;
+      cell = this.nextPageCell(axis, direction);
+    } else if (e.key === "Home" || e.key === "End") {
+      direction = e.key === "End" ? 1 : -1;
+      axis = e.altKey ? AxisType.COLUMNS : AxisType.ROWS;
+      cell = this.endCell(axis, direction);
+    }
+    // selection
+    e.preventDefault();
+    if (this.selectCell(cell, e.shiftKey && e.key !== "Tab") === false) {
+      return false;
+    }
+    return { cell, axis, direction };
+  };
   handleNavigationKeys = e => {
     if (e.which === 65 && (e.metaKey || e.ctrlKey)) {
       // ctrl+A
@@ -173,55 +216,23 @@ export class ScrollableGrid extends ScrollableArea {
       ) {
         return false;
       }
-
-      // } else if (e.which === 13) {
-      //   console.log("enter", e);
-    } else if ((e.which > 32 && e.which < 41) || e.which === 9) {
-      // arrow keys
-      let direction, cell, axis;
-      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-        if (
-          document.activeElement.tagName === "SELECT" ||
-          document.activeElement.tagName === "TEXTAREA"
-        ) {
-          return;
-        }
-        direction = e.key === "ArrowDown" ? 1 : -1;
-        axis = AxisType.ROWS;
-        cell = this.nextCell(axis, direction, 1);
-      } else if (
-        e.key === "ArrowRight" ||
-        e.key === "ArrowLeft" ||
-        e.key === "Tab"
-      ) {
-        if (
-          (document.activeElement.tagName === "INPUT" ||
-            document.activeElement.tagName === "TEXTAREA") &&
-          e.key !== "Tab"
-        ) {
-          return;
-        }
-        direction =
-          e.key === "ArrowRight" || (e.key === "Tab" && !e.shiftKey) ? 1 : -1;
-        axis = AxisType.COLUMNS;
-        cell = this.nextCell(axis, direction, 1);
-      } else if (e.key === "PageUp" || e.key === "PageDown") {
-        direction = e.key === "PageDown" ? 1 : -1;
-        axis = e.altKey ? AxisType.COLUMNS : AxisType.ROWS;
-        cell = this.nextPageCell(axis, direction);
-      } else if (e.key === "Home" || e.key === "End") {
-        direction = e.key === "End" ? 1 : -1;
-        axis = e.altKey ? AxisType.COLUMNS : AxisType.ROWS;
-        cell = this.endCell(axis, direction);
+    } else {
+      let navigationKeyHandler = this.navigationKeyHandler;
+      if (this.props.navigationKeyHandler) {
+        navigationKeyHandler = e =>
+          this.props.navigationKeyHandler(e, {
+            nextCell: this.nextCell,
+            nextPageCell: this.nextPageCell,
+            endCell: this.endCell,
+            selectCell: this.selectCell
+          });
       }
-      // selection
-      e.preventDefault();
-      if (this.selectCell(cell, e.shiftKey && e.key !== "Tab") === false) {
-        return false;
+      const navigation = navigationKeyHandler(e);
+      if (navigation) {
+        const { cell, axis, direction } = navigation;
+        this.scrollOnKey(cell, axis, direction);
+        return { ...cell, axis, direction };
       }
-      this.scrollOnKey(cell, axis, direction);
-
-      return { ...cell, axis, direction };
     }
   };
 

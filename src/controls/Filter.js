@@ -22,13 +22,16 @@ class FilterValues extends ScrollableArea {
     while (index < rowCount && i < height / rowHeight) {
       const { id, label } = this.props.items[index];
       items.push(
-        <div key={index} style={{ height: rowHeight, width: "inherit" }}>
+        <div
+          key={index}
+          style={{ height: rowHeight, width: "inherit", display: "flex" }}
+        >
           <input
             type="checkbox"
             checked={filter[id] !== undefined}
             onChange={() => onChangeCheck(id, index)}
           />
-          <span onClick={() => onChangeCheck(id, index)}>{label}</span>
+          <div onClick={() => onChangeCheck(id, index)}>{label}</div>
         </div>
       );
       index++;

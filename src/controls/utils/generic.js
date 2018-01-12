@@ -136,6 +136,10 @@ export function toAccessorFunction(accessor) {
   return accessor;
 }
 
+export function nullValue(obj, alternativeValue) {
+  return isNullOrUndefined(obj) ? alternativeValue : obj;
+}
+
 /* eslint-disable no-param-reassign */
 export const range = (a, b) =>
   Array.from(
@@ -146,6 +150,9 @@ export const range = (a, b) =>
       }
     })(a, b)
   );
+// -----------------------------------
+// conversion functions
+// -----------------------------------
 // date functions
 // export const isDate = d => d instanceof Date && !isNaN(d.valueOf());
 export const formatValue = (value, fmt, ndec) => {
@@ -167,20 +174,26 @@ export const formatValue = (value, fmt, ndec) => {
 export const numberToString = (n, fmt, ndec) => {
   let v = n,
     v2 = "";
-  // if (!isNullOrUndefined(ndec)) {
-  const nf = n.toFixed(ndec);
-  const nn = nf.length - n.toString().length;
-  v = Number(nf);
-  if (nn > 0) {
-    v2 = nf.slice(nf.length - nn);
-    // }
-  } else {
-    if (!fmt || fmt === "LocaleString") {
-      v = v.toLocaleString();
-    } else if (fmt === "String") {
-      v = v.toString();
+  if (!isNullOrUndefined(ndec)) {
+    const nf = n.toFixed(ndec);
+    const nn = nf.length - n.toString().length;
+    v = Number(nf);
+    if (nn > 0) {
+      v2 = nf.slice(nf.length - nn);
     }
   }
+  if (!fmt || fmt === "LocaleString") {
+    v = v.toLocaleString();
+    if (v2 !== "") {
+      const separator = (0.1).toLocaleString().slice(1, 2);
+      if (separator !== ".") {
+        v2 = v2.replace(".", separator);
+      }
+    }
+  } else if (fmt === "String") {
+    v = v.toString();
+  }
+
   return v + v2;
 };
 
@@ -243,6 +256,9 @@ export const stringToDate = (s, fmt) => {
     ? new Date(`${ds[2]}-${ds[1].padStart(2, 0)}-${ds[0].padStart(2, 0)}`)
     : undefined;
 };
+// -------------------------------------------
+//  key management
+//  ------------------------------------------
 export const isNavigationKey = e =>
   (e.which > 32 && e.which < 41) || // arrows...
   e.which === 9 || // tab

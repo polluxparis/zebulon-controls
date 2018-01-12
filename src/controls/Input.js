@@ -181,6 +181,7 @@ export class Input extends Component {
           checked={this.state.value || false}
           disabled={disabled}
           onChange={this.handleChange}
+          onBlur={this.handleBlur}
           ref={ref => (this.focused = ref)}
           tabIndex={0}
           onFocus={e => (this.props.onFocus || (() => {}))(e)}

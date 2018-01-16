@@ -1,7 +1,7 @@
 // import React, { Component } from "react";
 import { ScrollableArea } from "./ScrollableArea";
 import { AxisType, toAxis } from "./constants";
-import { isEmpty } from "./utils/generic";
+import { isEmpty, isNullOrUndefined } from "./utils/generic";
 export class ScrollableGrid extends ScrollableArea {
   constructor(props) {
     super(props);
@@ -101,30 +101,51 @@ export class ScrollableGrid extends ScrollableArea {
       this.onScroll(axis, -direction, cell[toAxis(axis)]);
     }
   };
-
-  lastIndex = (axis, direction) => {
-    const last =
-      axis === AxisType.COLUMNS
-        ? this.props.columnVisibleLength - 1
-        : this.props.data.length - 1;
-    return direction === 1 ? last : 0;
-  };
   nextIndex = (axis, direction, index, offset) => {
-    const last =
-      axis === AxisType.COLUMNS
-        ? this.props.columnVisibleLength - 1
-        : this.props.data.length - 1;
-    return Math.max(0, Math.min(last, index + offset * direction));
+    const { data, meta, dataLength } = this.props;
+    let nextIndex = index;
+    if (axis === AxisType.COLUMNS) {
+      if (direction === 1) {
+        nextIndex =
+          meta.visibleIndexes[
+            Math.min(
+              meta.visibleIndexes.length - 1,
+              meta.properties[index].visibleIndex_ + offset
+            )
+          ];
+      } else {
+        nextIndex =
+          meta.visibleIndexes[
+            Math.max(0, meta.properties[index].visibleIndex_ - offset)
+          ];
+      }
+    } else if (axis === AxisType.ROWS) {
+      nextIndex = Math.max(
+        0,
+        Math.min((dataLength || data.length) - 1, index + offset * direction)
+      );
+    }
+    return nextIndex;
   };
   nextPageIndex = (axis, direction, index) => {
     // a voir
+    const { data, meta, dataLength } = this.props;
     const last =
       axis === AxisType.COLUMNS
-        ? this.props.columnVisibleLength - 1
-        : this.props.data.length - 1;
+        ? meta.visibleIndexes[meta.visibleIndexes.length - 1]
+        : (dataLength || data.length) - 1;
     const offset =
       this.stopIndex[toAxis(axis)] - this.state.scroll[toAxis(axis)].startIndex;
     return Math.max(0, Math.min(last, index + offset * direction));
+  };
+  lastIndex = (axis, direction) => {
+    const { data, meta, dataLength } = this.props;
+    const last =
+      axis === AxisType.COLUMNS
+        ? meta.visibleIndexes[meta.visibleIndexes.length - 1]
+        : (dataLength || data.length) - 1;
+    const first = axis === AxisType.COLUMNS ? meta.visibleIndexes[0] : 0;
+    return direction === 1 ? last : first;
   };
   // ------------------------------------------------
   nextCell = (axis, direction, offset) => {
@@ -216,7 +237,7 @@ export class ScrollableGrid extends ScrollableArea {
       ) {
         return false;
       }
-    } else {
+    } else if (!isNullOrUndefined(this.selectedRange().end.rows)) {
       let navigationKeyHandler = this.navigationKeyHandler;
       if (this.props.navigationKeyHandler) {
         navigationKeyHandler = e =>
@@ -238,7 +259,8 @@ export class ScrollableGrid extends ScrollableArea {
 
   onScroll = (axis, dir, ix, positionRatio) => {
     const scroll = this.state.scroll;
-    const { height, width, rowHeight, data, meta } = this.props;
+    const { height, width, rowHeight, data, meta, dataLength } = this.props;
+    const properties = meta.properties;
     const newScroll = {
       rows: { ...scroll.rows },
       columns: { ...scroll.columns }
@@ -252,11 +274,11 @@ export class ScrollableGrid extends ScrollableArea {
     // scroll event =>scroll by position
     if (axis === AxisType.COLUMNS) {
       if (ix === null && positionRatio !== null) {
-        const lastColumn = meta[meta.length - 1];
+        const lastColumn = properties[properties.length - 1];
         position =
           (lastColumn.position + (lastColumn.width || 0) * !lastColumn.hidden) *
           positionRatio;
-        const column = meta.find(
+        const column = properties.find(
           column =>
             column.width !== 0 &&
             position >= column.position &&
@@ -268,14 +290,14 @@ export class ScrollableGrid extends ScrollableArea {
         startIndex = index;
       } else if (direction === 1) {
         startIndex = index;
-        position = meta[index].position;
+        position = properties[index].position;
       } else {
         let visibleWidth = width - this.scrollbars.vertical.width;
         position = Math.max(
           0,
-          meta[index].position + meta[index].width - visibleWidth
+          properties[index].position + properties[index].width - visibleWidth
         );
-        const column = meta.find(
+        const column = properties.find(
           column =>
             position >= column.position &&
             position <= column.position + (column.width || 0)
@@ -299,7 +321,7 @@ export class ScrollableGrid extends ScrollableArea {
       const nRows = Math.ceil(visibleHeight / rowHeight);
       // scroll event
       if (ix === null && positionRatio !== null) {
-        startIndex = Math.round(data.length * positionRatio);
+        startIndex = Math.round((dataLength || data.length) * positionRatio);
         direction = Math.sign(
           scroll.rows.startIndex +
             (scroll.rows.direction === -1 ? 1 : 0) -
@@ -308,7 +330,10 @@ export class ScrollableGrid extends ScrollableArea {
         index =
           direction === 1
             ? startIndex
-            : Math.min(startIndex + nRows - 1, data.length - nRows);
+            : Math.min(
+                startIndex + nRows - 1,
+                (dataLength || data.length) - nRows
+              );
       } else {
         startIndex = direction === 1 ? index : Math.max(0, index - nRows + 1);
       }
@@ -348,10 +373,12 @@ export class ScrollableGrid extends ScrollableArea {
       rowHeight,
       width,
       data,
+      dataLength,
       meta,
       scroll,
       onScroll
     } = this.props;
+    const properties = meta.properties;
     let { shift, index, startIndex, position } = scroll[sense];
     let direction =
       sense === "columns" ? -Math.sign(e.deltaX) : -Math.sign(e.deltaY);
@@ -359,7 +386,7 @@ export class ScrollableGrid extends ScrollableArea {
     const nRows = Math.ceil(visibleHeight / rowHeight);
 
     if (sense === "rows") {
-      if (nRows > data.length) {
+      if (nRows > (dataLength || data.length)) {
         direction = 1;
       }
       shift = direction === 1 ? 0 : visibleHeight - nRows * rowHeight;
@@ -367,7 +394,7 @@ export class ScrollableGrid extends ScrollableArea {
         startIndex = Math.max(
           Math.min(
             scroll.rows.startIndex + (scroll[sense].direction === direction),
-            data.length - nRows
+            (dataLength || data.length) - nRows
           ),
           0
         );
@@ -381,15 +408,15 @@ export class ScrollableGrid extends ScrollableArea {
       }
     } else {
       direction = 1;
-      const lastColumn = meta[meta.length - 1];
+      const lastColumn = properties[properties.length - 1];
       position = Math.min(
         Math.max(position + e.deltaX, 0),
         lastColumn.position + lastColumn.width - width
       );
-      const column = meta.find(
+      const column = properties.find(
         column =>
           position >= column.position &&
-          position <= column.position + column.width
+          column.position + column.width > position
       );
       shift = column.position - position;
       index = column.index;

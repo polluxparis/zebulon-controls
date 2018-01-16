@@ -128,6 +128,9 @@ export function isUndefined(obj) {
 export function isNullOrUndefined(obj) {
   return isUndefined(obj) || isNull(obj);
 }
+export function isNullValue(obj) {
+  return isUndefined(obj) || isNull(obj) || obj === "";
+}
 
 export function toAccessorFunction(accessor) {
   if (typeof accessor === "string") {
@@ -137,7 +140,7 @@ export function toAccessorFunction(accessor) {
 }
 
 export function nullValue(obj, alternativeValue) {
-  return isNullOrUndefined(obj) ? alternativeValue : obj;
+  return isNullValue(obj) ? alternativeValue : obj;
 }
 
 /* eslint-disable no-param-reassign */

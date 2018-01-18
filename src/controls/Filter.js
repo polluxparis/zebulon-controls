@@ -148,7 +148,7 @@ export class Filter extends Component {
       <div
         style={{
           ...this.props.style,
-          width: "fit-content",
+          // width: "fit-content",
           height: "fit-content"
         }}
         onWheel={this.onWheel}
@@ -180,9 +180,12 @@ export class Filter extends Component {
           />
           Select all
           <FilterValues
-            width="inherit"
+            width={(this.props.style.width || 200) * 0.98}
             height={maxRows * rowHeight}
-            style={{ width: "98%", justifyContent: "space-between" }}
+            style={{
+              width: (this.props.style.width || 200) * 0.98,
+              justifyContent: "space-between"
+            }}
             rowCount={this.state.rowCount}
             rowHeight={rowHeight}
             items={this.state.items}

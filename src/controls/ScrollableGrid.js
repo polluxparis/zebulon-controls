@@ -35,6 +35,7 @@ export class ScrollableGrid extends ScrollableArea {
           AxisType.COLUMNS,
           null,
           null,
+          null,
           1 - Math.min(ratios.horizontal.display, 1)
         );
       }
@@ -46,18 +47,25 @@ export class ScrollableGrid extends ScrollableArea {
           AxisType.ROWS,
           null,
           null,
+          null,
           1 - Math.min(ratios.vertical.display, 1)
         );
       }
     }
     if (
       this.props.scroll !== nextProps.scroll &&
-      (nextProps.scroll.rows.index !== this.state.scroll.rows.index ||
-        nextProps.scroll.rows.direction !== this.state.scroll.rows.direction ||
-        nextProps.scroll.columns.index !== this.state.scroll.columns.index ||
+      (nextProps.scroll.rows.index !== this.props.scroll.rows.index ||
+        nextProps.scroll.rows.direction !== this.props.scroll.rows.direction ||
+        nextProps.scroll.columns.index !== this.props.scroll.columns.index ||
         nextProps.scroll.columns.direction !==
-          this.state.scroll.columns.direction)
+          this.props.scroll.columns.direction)
     ) {
+      console.log(
+        "scroll receiveprops",
+        this.state.scroll,
+        this.props.scroll,
+        nextProps.scroll
+      );
       this.setState({ scroll: nextProps.scroll });
     }
   }
@@ -88,8 +96,9 @@ export class ScrollableGrid extends ScrollableArea {
   // ------------------------------------------------
   // to be overwritten
   // ------------------------------------------------
-  scrollOnKey = (cell, axis, direction) => {
-    const scroll = this.state.scroll;
+  scrollOnKey = (cell, axis, direction, extension) => {
+    const scroll = this.props.scroll;
+    console.log("scrollonkey", this.props.scroll, this.stopIndex);
     if (
       this.scrollbars[axis === AxisType.ROWS ? "vertical" : "horizontal"]
         .width &&
@@ -98,7 +107,12 @@ export class ScrollableGrid extends ScrollableArea {
         (direction === -1 &&
           cell[toAxis(axis)] <= scroll[toAxis(axis)].startIndex))
     ) {
-      this.onScroll(axis, -direction, cell[toAxis(axis)]);
+      // this.onScroll(axis, -direction, cell[toAxis(axis)]);
+      console.log("scrollonkey2", this.props.scroll, cell);
+
+      this.onScroll(axis, -direction, cell, extension);
+    } else {
+      this.selectCell(cell, extension);
     }
   };
   nextIndex = (axis, direction, index, offset) => {
@@ -135,7 +149,7 @@ export class ScrollableGrid extends ScrollableArea {
         ? meta.visibleIndexes[meta.visibleIndexes.length - 1]
         : (dataLength || data.length) - 1;
     const offset =
-      this.stopIndex[toAxis(axis)] - this.state.scroll[toAxis(axis)].startIndex;
+      this.stopIndex[toAxis(axis)] - this.props.scroll[toAxis(axis)].startIndex;
     return Math.max(0, Math.min(last, index + offset * direction));
   };
   lastIndex = (axis, direction) => {
@@ -214,10 +228,10 @@ export class ScrollableGrid extends ScrollableArea {
     }
     // selection
     e.preventDefault();
-    if (this.selectCell(cell, e.shiftKey && e.key !== "Tab") === false) {
-      return false;
-    }
-    return { cell, axis, direction };
+    // if (this.selectCell(cell, e.shiftKey && e.key !== "Tab") === false) {
+    //   return false;
+    // }
+    return { cell, axis, direction, extension: e.shiftKey && e.key !== "Tab" };
   };
   handleNavigationKeys = e => {
     if (e.which === 65 && (e.metaKey || e.ctrlKey)) {
@@ -238,6 +252,7 @@ export class ScrollableGrid extends ScrollableArea {
         return false;
       }
     } else if (!isNullOrUndefined(this.selectedRange().end.rows)) {
+      console.log("scrollonkey-2", this.props.scroll);
       let navigationKeyHandler = this.navigationKeyHandler;
       if (this.props.navigationKeyHandler) {
         navigationKeyHandler = e =>
@@ -250,15 +265,18 @@ export class ScrollableGrid extends ScrollableArea {
       }
       const navigation = navigationKeyHandler(e);
       if (navigation) {
-        const { cell, axis, direction } = navigation;
-        this.scrollOnKey(cell, axis, direction);
+        const { cell, axis, direction, extension } = navigation;
+        console.log("scrollonkey-1", this.props.scroll, cell);
+        this.scrollOnKey(cell, axis, direction, extension);
         return { ...cell, axis, direction };
       }
     }
   };
 
-  onScroll = (axis, dir, ix, positionRatio) => {
-    const scroll = this.state.scroll;
+  onScroll = (axis, dir, cell, extension, positionRatio) => {
+    const ix = cell ? cell[toAxis(axis)] : null;
+    const scroll = { ...this.state.scroll };
+    console.log("scrollable", scroll, cell);
     const { height, width, rowHeight, data, meta, dataLength } = this.props;
     const properties = meta.properties;
     const newScroll = {
@@ -345,12 +363,15 @@ export class ScrollableGrid extends ScrollableArea {
       };
     }
     if (direction) {
+      this.setState({ scroll: newScroll });
+      console.log("scrollable1", scroll, newScroll, cell);
       if (this.props.onScroll) {
-        if (this.props.onScroll(newScroll) === false) {
+        if (this.props.onScroll(newScroll, cell, extension) === false) {
           return false;
         }
       }
-      this.setState({ scroll: newScroll });
+      console.log("scrollable2", this.props.scroll, newScroll, cell);
+
       return true;
     }
   };
@@ -359,6 +380,7 @@ export class ScrollableGrid extends ScrollableArea {
     if (e.type === "scrollbar") {
       this.onScroll(
         e.direction === "horizontal" ? AxisType.COLUMNS : AxisType.ROWS,
+        null,
         null,
         null,
         e.positionRatio
@@ -432,10 +454,10 @@ export class ScrollableGrid extends ScrollableArea {
     const rows = content.props.children;
     let rowIndex, columnIndex;
     if (Array.isArray(rows) && rows.length) {
-      rowIndex = this.state.scroll.rows.startIndex + rows.length - 1;
+      rowIndex = this.props.scroll.rows.startIndex + rows.length - 1;
       const columns = rows[0].props.children;
       if (Array.isArray(columns) && columns.length) {
-        columnIndex = this.state.scroll.columns.startIndex + columns.length - 1;
+        columnIndex = this.props.scroll.columns.startIndex + columns.length - 1;
       }
     }
     this.stopIndex = { rows: rowIndex, columns: columnIndex };

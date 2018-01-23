@@ -1,11 +1,11 @@
-// import React, { Component } from "react";
+import React, { cloneElement } from "react";
+
 import { ScrollableArea } from "./ScrollableArea";
-import { AxisType, toAxis } from "./constants";
+import { AxisType, toAxis, ScrollbarSize } from "./constants";
 import { isEmpty, isNullOrUndefined } from "./utils/generic";
 export class ScrollableGrid extends ScrollableArea {
   constructor(props) {
     super(props);
-
     this.state = {
       scroll: {
         rows: { index: 0, direction: 1, startIndex: 0, shift: 0, position: 0 },
@@ -17,8 +17,15 @@ export class ScrollableGrid extends ScrollableArea {
           position: 0
         }
       },
-      selectedRange: { start: {}, end: {} }
+      selectedRange: props.selectedRange || { start: {}, end: {} },
+      meta: props.meta
     };
+    if (!props.meta) {
+      this.state.meta = {
+        visibleIndexes: [0],
+        properties: [{ width: props.rowWidth, position: 0, visibleIndex_: 0 }]
+      };
+    }
   }
   componentWillReceiveProps(nextProps) {
     if (
@@ -60,22 +67,22 @@ export class ScrollableGrid extends ScrollableArea {
         nextProps.scroll.columns.direction !==
           this.props.scroll.columns.direction)
     ) {
-      console.log(
-        "scroll receiveprops",
-        this.state.scroll,
-        this.props.scroll,
-        nextProps.scroll
-      );
       this.setState({ scroll: nextProps.scroll });
+    }
+    if (this.props.selectedRange !== nextProps.selectedRange) {
+      this.setState({ selectedRange: nextProps.selectedRange });
+    }
+    if (this.props.meta !== nextProps.meta) {
+      this.setState({ meta: nextProps.meta });
     }
   }
   componentWillMount() {}
   // ------------------------------------------------
   // selected range
   // ------------------------------------------------
-  selectedRange = () => this.props.selectedRange;
+  selectedRange = () => this.state.selectedRange;
   selectedCell = () => {
-    const cell = this.props.selectedRange.end;
+    const cell = this.state.selectedRange.end;
     return !isEmpty(cell) ? { ...cell } : { columns: 0, rows: 0 };
   };
   selectCell = (cell, extension) => {
@@ -89,16 +96,19 @@ export class ScrollableGrid extends ScrollableArea {
   };
   selectRange = range => {
     if (this.props.selectRange) {
-      return this.props.selectRange(range);
+      if (!this.props.selectRange(range)) {
+        return false;
+      }
     }
+    this.setState({ selectedRange: range });
   };
 
   // ------------------------------------------------
   // to be overwritten
   // ------------------------------------------------
   scrollOnKey = (cell, axis, direction, extension) => {
-    const scroll = this.props.scroll;
-    console.log("scrollonkey", this.props.scroll, this.stopIndex);
+    const scroll = this.state.scroll;
+    // console.log("scrollonkey", this.props.scroll, this.stopIndex);
     if (
       this.scrollbars[axis === AxisType.ROWS ? "vertical" : "horizontal"]
         .width &&
@@ -107,16 +117,14 @@ export class ScrollableGrid extends ScrollableArea {
         (direction === -1 &&
           cell[toAxis(axis)] <= scroll[toAxis(axis)].startIndex))
     ) {
-      // this.onScroll(axis, -direction, cell[toAxis(axis)]);
-      console.log("scrollonkey2", this.props.scroll, cell);
-
       this.onScroll(axis, -direction, cell, extension);
     } else {
       this.selectCell(cell, extension);
     }
   };
   nextIndex = (axis, direction, index, offset) => {
-    const { data, meta, dataLength } = this.props;
+    const { data, dataLength } = this.props;
+    const meta = this.state.meta;
     let nextIndex = index;
     if (axis === AxisType.COLUMNS) {
       if (direction === 1) {
@@ -143,13 +151,14 @@ export class ScrollableGrid extends ScrollableArea {
   };
   nextPageIndex = (axis, direction, index) => {
     // a voir
-    const { data, meta, dataLength } = this.props;
+    const { data, dataLength } = this.props;
+    const meta = this.state.meta;
     const last =
       axis === AxisType.COLUMNS
         ? meta.visibleIndexes[meta.visibleIndexes.length - 1]
         : (dataLength || data.length) - 1;
     const offset =
-      this.stopIndex[toAxis(axis)] - this.props.scroll[toAxis(axis)].startIndex;
+      this.stopIndex[toAxis(axis)] - this.state.scroll[toAxis(axis)].startIndex;
     return Math.max(0, Math.min(last, index + offset * direction));
   };
   lastIndex = (axis, direction) => {
@@ -252,7 +261,7 @@ export class ScrollableGrid extends ScrollableArea {
         return false;
       }
     } else if (!isNullOrUndefined(this.selectedRange().end.rows)) {
-      console.log("scrollonkey-2", this.props.scroll);
+      // console.log("scrollonkey-2", this.props.scroll);
       let navigationKeyHandler = this.navigationKeyHandler;
       if (this.props.navigationKeyHandler) {
         navigationKeyHandler = e =>
@@ -266,7 +275,7 @@ export class ScrollableGrid extends ScrollableArea {
       const navigation = navigationKeyHandler(e);
       if (navigation) {
         const { cell, axis, direction, extension } = navigation;
-        console.log("scrollonkey-1", this.props.scroll, cell);
+        // console.log("scrollonkey-1", this.props.scroll, cell);
         this.scrollOnKey(cell, axis, direction, extension);
         return { ...cell, axis, direction };
       }
@@ -277,7 +286,8 @@ export class ScrollableGrid extends ScrollableArea {
     const ix = cell ? cell[toAxis(axis)] : null;
     const scroll = { ...this.state.scroll };
     console.log("scrollable", scroll, cell);
-    const { height, width, rowHeight, data, meta, dataLength } = this.props;
+    const { height, width, rowHeight, data, dataLength } = this.props;
+    const meta = this.state.meta;
     const properties = meta.properties;
     const newScroll = {
       rows: { ...scroll.rows },
@@ -321,7 +331,6 @@ export class ScrollableGrid extends ScrollableArea {
             position <= column.position + (column.width || 0)
         );
         startIndex = column.index_;
-
         shift = Math.min(0, column.position - position);
       }
       // console.log("scroll", direction, shift, position);
@@ -340,18 +349,25 @@ export class ScrollableGrid extends ScrollableArea {
       // scroll event
       if (ix === null && positionRatio !== null) {
         startIndex = Math.round((dataLength || data.length) * positionRatio);
-        direction = Math.sign(
-          scroll.rows.startIndex +
-            (scroll.rows.direction === -1 ? 1 : 0) -
-            startIndex
-        );
-        index =
-          direction === 1
-            ? startIndex
-            : Math.min(
-                startIndex + nRows - 1,
-                (dataLength || data.length) - nRows
-              );
+        direction = isNullOrUndefined(dir)
+          ? Math.sign(
+              scroll.rows.startIndex +
+                (scroll.rows.direction === -1 ? 1 : 0) -
+                startIndex
+            )
+          : dir;
+        if (direction === 1) {
+          index = startIndex;
+        } else {
+          index = startIndex + nRows - 1;
+          if (index >= (dataLength || data.length)) {
+            startIndex = Math.max(
+              0,
+              startIndex - index + (dataLength || data.length) - 1
+            );
+            index = (dataLength || data.length) - 1;
+          }
+        }
       } else {
         startIndex = direction === 1 ? index : Math.max(0, index - nRows + 1);
       }
@@ -370,7 +386,7 @@ export class ScrollableGrid extends ScrollableArea {
           return false;
         }
       }
-      console.log("scrollable2", this.props.scroll, newScroll, cell);
+      // console.log("scrollable2", this.props.scroll, newScroll, cell);
 
       return true;
     }
@@ -380,7 +396,7 @@ export class ScrollableGrid extends ScrollableArea {
     if (e.type === "scrollbar") {
       this.onScroll(
         e.direction === "horizontal" ? AxisType.COLUMNS : AxisType.ROWS,
-        null,
+        e.sense,
         null,
         null,
         e.positionRatio
@@ -390,16 +406,9 @@ export class ScrollableGrid extends ScrollableArea {
   onWheel = e => {
     e.preventDefault();
     const sense = e.altKey || e.deltaX !== 0 ? "columns" : "rows";
-    const {
-      height,
-      rowHeight,
-      width,
-      data,
-      dataLength,
-      meta,
-      scroll,
-      onScroll
-    } = this.props;
+    const { height, rowHeight, width, data, dataLength, onScroll } = this.props;
+    const scroll = { ...this.state.scroll };
+    const meta = this.state.meta;
     const properties = meta.properties;
     let { shift, index, startIndex, position } = scroll[sense];
     let direction =
@@ -445,6 +454,7 @@ export class ScrollableGrid extends ScrollableArea {
       startIndex = index;
     }
     scroll[sense] = { index, direction, startIndex, shift, position };
+    this.setState({ scroll });
     if (onScroll) {
       onScroll(scroll);
     }
@@ -452,15 +462,107 @@ export class ScrollableGrid extends ScrollableArea {
   _getContent = () => {
     const content = this.getContent();
     const rows = content.props.children;
-    let rowIndex, columnIndex;
+    let rowIndex = 0,
+      columnIndex = 0;
     if (Array.isArray(rows) && rows.length) {
-      rowIndex = this.props.scroll.rows.startIndex + rows.length - 1;
-      const columns = rows[0].props.children;
-      if (Array.isArray(columns) && columns.length) {
-        columnIndex = this.props.scroll.columns.startIndex + columns.length - 1;
+      rowIndex = this.state.scroll.rows.startIndex + rows.length - 1;
+      if (rows[0]) {
+        const columns = rows[0].props.children;
+        if (Array.isArray(columns) && columns.length) {
+          columnIndex =
+            this.state.scroll.columns.startIndex + columns.length - 1;
+        }
       }
     }
     this.stopIndex = { rows: rowIndex, columns: columnIndex };
     return content;
+  };
+
+  // -----------------------------------------------
+  // default-> list of items
+  // -------------------------------------------------
+  getRatios = props => {
+    const { height, width, rowHeight, rowWidth, data } = props;
+    const scroll = this.state.scroll;
+    // const meta = props.meta.properties;
+    // const lastColumn = meta[meta.length - 1];
+    // const columnsWidth = lastColumn.position + lastColumn.computedWidth;
+    const horizontalDisplay =
+      (width - (data.length * rowHeight > height ? ScrollbarSize : 0)) /
+      rowWidth;
+    const verticalDisplay =
+      (height - (rowWidth > width ? ScrollbarSize : 0)) /
+      (data.length * rowHeight);
+    // const horizontalDisplay = width / rowWidth;
+    // const verticalDisplay = height / (data.length * rowHeight);
+    return {
+      vertical: {
+        display: verticalDisplay,
+        position: Math.min(
+          scroll.rows.startIndex / data.length,
+          1 - verticalDisplay
+        )
+      },
+      horizontal: {
+        display: horizontalDisplay,
+        position: Math.min(
+          scroll.columns.position / rowWidth,
+          1 - horizontalDisplay
+        )
+      }
+    };
+  };
+
+  getContent = () => {
+    const { data, height, rowHeight, width, rowWidth } = this.props;
+    let i = 0,
+      index = this.state.scroll.rows.startIndex;
+    const items = [];
+    const visibleWidth = width - this.scrollbars.vertical.width;
+    while (index < data.length && i < height / rowHeight) {
+      const selected = index === this.state.selectedRange.end.rows;
+      const ix = index;
+      const onClick = e => {
+        e.preventDefault();
+        this.selectCell({ rows: ix, columns: 0 }, e.shiftKey);
+      };
+      const onMouseOver = e => {
+        e.preventDefault();
+        if (e.buttons === 1) {
+          this.selectCell({ rows: ix, columns: 0 }, true);
+        }
+      };
+      const className =
+        "zebulon-table-cell" + (selected ? " zebulon-table-cell-selected" : "");
+      items.push(
+        cloneElement(data[index], {
+          className,
+          index: ix,
+          selected,
+          onClick,
+          onMouseOver
+        })
+      );
+      index++;
+      i++;
+    }
+
+    return (
+      <div
+        style={{
+          position: "absolute",
+          top: this.state.scroll.rows.shift,
+          width: "inherit"
+        }}
+        onWheel={this.onWheel}
+        // assuming that id = row index
+        // onClick={e => {
+        // this.selectCell({ rows: e.target.id, columns: 0 });
+        // console.log("onclick", e.target.id);
+        // }}
+      >
+        {items}
+      </div>
+    );
   };
 }

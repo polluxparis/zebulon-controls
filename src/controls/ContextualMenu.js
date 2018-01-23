@@ -73,6 +73,7 @@ const buildMenu = (menu, top, left, handleEvent) => {
 export class MenuItem extends Component {
 	handleMenuEvent = e => {
 		// console.log(this.props, e);
+		e.preventDefault();
 		this.props.handleMenuEvent(e, this.props.item);
 	};
 
@@ -128,13 +129,13 @@ const MENU_EVENT = "MENU_EVENT";
 export class ContextualMenu extends Component {
 	constructor(props) {
 		super(props);
-		this.state = { menu: null };
+		this.state = { menu: null, componentId: props.componentId };
 		this.openedLevel = {};
 		this.hoveredItem = {};
 	}
 	componentDidMount() {
 		window.addEventListener("MENU_EVENT", this.handleEvent);
-		this.div = document.getElementById(this.props.gridId);
+		this.div = document.getElementById(this.state.componentId);
 	}
 	componentDidUnMount() {
 		window.removeEventListener("MENU_EVENT", this.handleEvent);
@@ -143,8 +144,8 @@ export class ContextualMenu extends Component {
 		this.setState({ menu: null });
 	};
 	handleEvent = e => {
-		const { position, menuId, data, gridId } = e.detail;
-		if (gridId === this.props.gridId) {
+		const { position, menuId, data, componentId } = e.detail;
+		if (componentId === this.state.componentId) {
 			const rect = this.div.getBoundingClientRect();
 			position.y -= rect.y;
 			position.x -= rect.x;
@@ -180,7 +181,7 @@ export class ContextualMenu extends Component {
 				}
 				this.setState({ menu: this.state.menu });
 			} else if (item.onClick) {
-				const menuItem = item.onClick(data, item);
+				const menuItem = item.onClick(this.state.data, item);
 				if (
 					item.type === "sub-menu" &&
 					menuItem &&
@@ -248,7 +249,7 @@ export class ContextualMenuClient extends Component {
 			// e.stopPropagation();
 			const event = new CustomEvent(MENU_EVENT, {
 				detail: {
-					gridId: this.props.gridId,
+					componentId: this.props.componentId,
 					ref: this.ref,
 					position: { x: e.clientX, y: e.clientY },
 					menuId: this.props.menuId,

@@ -21,24 +21,24 @@ export class ScrollableArea extends Component {
     if (ratios.horizontal.display < 1) {
       scrollbars.horizontal = { width: ScrollbarSize };
     }
-    if (
-      scrollbars.vertical &&
-      !scrollbars.horizontal &&
-      ratios.horizontal.display * (width - ScrollbarSize) / width < 1
-    ) {
-      scrollbars.horizontal = { width: ScrollbarSize };
-      ratios.horizontal.display =
-        ratios.horizontal.display * (width - ScrollbarSize) / width;
-    }
-    if (
-      !scrollbars.vertical &&
-      scrollbars.horizontal &&
-      ratios.vertical.display * (height - ScrollbarSize) / height < 1
-    ) {
-      scrollbars.horizontal = { width: ScrollbarSize };
-      ratios.vertical.display =
-        ratios.vertical.display * (width - ScrollbarSize) / width;
-    }
+    // if (
+    //   scrollbars.vertical &&
+    //   !scrollbars.horizontal &&
+    //   ratios.horizontal.display * (width - ScrollbarSize) / width < 1
+    // ) {
+    //   scrollbars.horizontal = { width: ScrollbarSize };
+    //   ratios.horizontal.display =
+    //     ratios.horizontal.display * (width - ScrollbarSize) / width;
+    // }
+    // if (
+    //   !scrollbars.vertical &&
+    //   scrollbars.horizontal &&
+    //   ratios.vertical.display * (height - ScrollbarSize) / height < 1
+    // ) {
+    //   scrollbars.horizontal = { width: ScrollbarSize };
+    //   ratios.vertical.display =
+    //     ratios.vertical.display * (width - ScrollbarSize) / width;
+    // }
     if (scrollbars.vertical && scrollbars.horizontal) {
       scrollbars.horizontal.length = width - ScrollbarSize;
       scrollbars.vertical.length = height - ScrollbarSize;
@@ -137,7 +137,8 @@ export class ScrollableArea extends Component {
   };
   _handleDrag = (type, event) => {
     const { length } = this.scrollbars[event.direction];
-    const size = this.ratios[event.direction].display * length;
+    const display = this.ratios[event.direction].display;
+    const size = Math.max(display * length, 30);
     if (type === "startDrag") {
       this.drag[event.direction] = {
         isDragging: true,
@@ -153,8 +154,9 @@ export class ScrollableArea extends Component {
       if (delta) {
         event.positionRatio = Math.min(
           Math.max(drag.previousPositionRatio + delta / length, 0),
-          1 - size / length
+          1 - display
         );
+        event.sense = Math.sign(-delta);
         // event.position = length * event.positionRatio;
         if (this.onScrollEvent(event)) {
           // console.log(
@@ -168,13 +170,19 @@ export class ScrollableArea extends Component {
         }
       }
     } else if (type === "click") {
-      event.positionRatio =
-        Math.max(
+      if (event.relativePosition + size / 2 > length) {
+        event.positionRatio = 1 - display;
+      } else {
+        event.positionRatio = Math.max(
           0,
-          Math.min(event.relativePosition - size / 2, length - size)
-        ) / length;
+          (event.relativePosition - size / 2) / length
+        );
+      }
+      event.sense = Math.sign(
+        this.ratios[event.direction].position - event.positionRatio
+      );
       this.onScrollEvent(event);
-      console.log("click area", length, size, event);
+      // console.log("click area", length, size, event);
     }
   };
   _handleMouseMove = e => {

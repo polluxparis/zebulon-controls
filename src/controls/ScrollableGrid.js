@@ -76,6 +76,15 @@ export class ScrollableGrid extends ScrollableArea {
       this.setState({ meta: nextProps.meta });
     }
   }
+  shouldComponentUpdate(nextProps, nextState) {
+    if (this.props.keyEvent !== nextProps.keyEvent) {
+      if (nextProps.isActive === undefined || nextProps.isActive) {
+        this.handleNavigationKeys(nextProps.keyEvent);
+      }
+      return false;
+    }
+    return true;
+  }
   componentWillMount() {}
   // ------------------------------------------------
   // selected range
@@ -118,9 +127,10 @@ export class ScrollableGrid extends ScrollableArea {
           cell[toAxis(axis)] <= scroll[toAxis(axis)].startIndex))
     ) {
       this.onScroll(axis, -direction, cell, extension);
-    } else {
-      this.selectCell(cell, extension);
     }
+    // else {
+    this.selectCell(cell, extension);
+    // }
   };
   nextIndex = (axis, direction, index, offset) => {
     const { data, dataLength } = this.props;
@@ -552,7 +562,8 @@ export class ScrollableGrid extends ScrollableArea {
         style={{
           position: "absolute",
           top: this.state.scroll.rows.shift,
-          width: "inherit"
+          width: "inherit",
+          height: "inherit"
         }}
         onWheel={this.onWheel}
         // assuming that id = row index

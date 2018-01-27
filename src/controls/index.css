@@ -59,11 +59,13 @@
 .zebulon-scrollbar-bar {
 	background-color: lightgrey;
 	border: solid 0.03em grey;
+	box-sizing: border-box;
 	border-radius: 0.25rem;
 }
 .zebulon-scrollbar-thumb {
 	background-color: grey;
 	border: solid 0.03em grey;
+	box-sizing: border-box;
 	border-radius: 0.25rem;
 }
 

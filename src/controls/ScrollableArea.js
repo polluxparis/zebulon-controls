@@ -227,7 +227,7 @@ export class ScrollableArea extends Component {
         // onKeyDown={e => this.console.log("KEYDOWN", e1)}
       >
         <div
-          id="toto"
+          id="scrollable-area"
           style={{
             width,
             ...(this.props.style || {}),
@@ -236,14 +236,12 @@ export class ScrollableArea extends Component {
             // width
           }}
         >
-          <div id="scrollable-area" style={style}>
+          <div id="scrollable-area-content" style={style}>
             {content}
           </div>
           <Scrollbar
             direction="vertical"
             width={scrollbars.vertical.width}
-            // left={scrollbars.horizontal.length}
-            // top={0}
             length={scrollbars.vertical.length}
             positionRatio={this.ratios.vertical.position}
             displayRatio={this.ratios.vertical.display}
@@ -255,8 +253,6 @@ export class ScrollableArea extends Component {
         <Scrollbar
           direction="horizontal"
           width={scrollbars.horizontal.width}
-          // left={0}
-          // top={scrollbars.vertical.length}
           length={scrollbars.horizontal.length}
           positionRatio={this.ratios.horizontal.position}
           displayRatio={this.ratios.horizontal.display}

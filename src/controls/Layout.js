@@ -1,12 +1,9 @@
 import React, { Component, cloneElement } from "react";
 import classnames from "classnames";
-import {
-  // ScrollableGrid,
-  ContextualMenu,
-  ContextualMenuClient,
-  utils
-} from "zebulon-controls";
-import { Input } from "../table/Input";
+import { ContextualMenu, ContextualMenuClient } from "./ContextualMenu";
+import { Input } from "./Input";
+import * as utils from "./utils/generic";
+
 // import { ZebulonTable } from "../table/ZebulonTable";
 // import { buildMeta } from "./meta.dataset";
 // ------------------------------------

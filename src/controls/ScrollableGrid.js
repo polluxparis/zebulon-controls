@@ -228,7 +228,8 @@ export class ScrollableGrid extends ScrollableArea {
       if (
         (document.activeElement.tagName === "INPUT" ||
           document.activeElement.tagName === "TEXTAREA") &&
-        e.key !== "Tab"
+        e.key !== "Tab" &&
+        !e.altKey
       ) {
         return false;
       }

@@ -179,8 +179,8 @@ export const numberToString = (n, fmt, ndec) => {
     v2 = "";
   if (!isNullOrUndefined(ndec)) {
     const nf = n.toFixed(ndec);
-    const nn = nf.length - n.toString().length;
     v = Number(nf);
+    const nn = nf.length - v.toString().length;
     if (nn > 0) {
       v2 = nf.slice(nf.length - nn);
     }
@@ -270,3 +270,24 @@ export const isNavigationKey = e =>
 export const isZoom = e =>
   (e.metaKey || e.ctrlKey) *
   (e.key === "+" || e.key === "=" || -(e.key === "-" || e.key === "_"));
+//------------------------------------------------
+// Copy, ...paste,export
+// -----------------------------------------------
+export const copy = text => {
+  try {
+    const bodyElement = document.getElementsByTagName("body")[0];
+    const clipboardTextArea = document.createElement("textarea");
+    clipboardTextArea.style.position = "absolute";
+    clipboardTextArea.style.left = "-10000px";
+    bodyElement.appendChild(clipboardTextArea);
+    clipboardTextArea.innerHTML = text;
+    clipboardTextArea.select();
+    window.setTimeout(() => {
+      bodyElement.removeChild(clipboardTextArea);
+    }, 0);
+  } catch (error) {
+    /* eslint-disable no-console */
+    console.error("error during copy", error);
+    /* eslint-enable */
+  }
+};

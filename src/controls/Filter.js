@@ -181,10 +181,12 @@ export class Filter extends Component {
           Select all
           <FilterValues
             width={(this.props.style.width || 200) * 0.98}
-            height={maxRows * rowHeight}
+            height={maxRows * rowHeight - 5}
             style={{
               width: (this.props.style.width || 200) * 0.98,
-              justifyContent: "space-between"
+              justifyContent: "space-between",
+              borderTop: "solid 0.02em rgba(0, 0, 0, 0.3)",
+              marginTop: 5
             }}
             rowCount={this.state.rowCount}
             rowHeight={rowHeight}

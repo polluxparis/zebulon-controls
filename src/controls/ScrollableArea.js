@@ -15,30 +15,12 @@ export class ScrollableArea extends Component {
   getRatios = () => this.ratios;
   getScrollbars = (height, width, ratios) => {
     const scrollbars = {};
-    if (ratios.vertical.display < 1) {
+    if (ratios.vertical.display < 1 && !this.props.noVerticalScrollbar) {
       scrollbars.vertical = { width: ScrollbarSize };
     }
     if (ratios.horizontal.display < 1) {
       scrollbars.horizontal = { width: ScrollbarSize };
     }
-    // if (
-    //   scrollbars.vertical &&
-    //   !scrollbars.horizontal &&
-    //   ratios.horizontal.display * (width - ScrollbarSize) / width < 1
-    // ) {
-    //   scrollbars.horizontal = { width: ScrollbarSize };
-    //   ratios.horizontal.display =
-    //     ratios.horizontal.display * (width - ScrollbarSize) / width;
-    // }
-    // if (
-    //   !scrollbars.vertical &&
-    //   scrollbars.horizontal &&
-    //   ratios.vertical.display * (height - ScrollbarSize) / height < 1
-    // ) {
-    //   scrollbars.horizontal = { width: ScrollbarSize };
-    //   ratios.vertical.display =
-    //     ratios.vertical.display * (width - ScrollbarSize) / width;
-    // }
     if (scrollbars.vertical && scrollbars.horizontal) {
       scrollbars.horizontal.length = width - ScrollbarSize;
       scrollbars.vertical.length = height - ScrollbarSize;
@@ -54,7 +36,7 @@ export class ScrollableArea extends Component {
         ),
         width: 0
       };
-    } else if (scrollbars.horizontal) {
+    } else if (scrollbars.horizontal && !this.props.noVerticalScrollbar) {
       scrollbars.horizontal.length = Math.min(
         width,
         width / ratios.horizontal.display

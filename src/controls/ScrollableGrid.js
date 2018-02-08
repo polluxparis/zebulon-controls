@@ -319,7 +319,7 @@ export class ScrollableGrid extends ScrollableArea {
           positionRatio;
         const column = properties.find(
           column =>
-            column.width !== 0 &&
+            column.computedWidth !== 0 &&
             position >= column.position &&
             position <= column.position + (column.width || 0)
         );
@@ -339,7 +339,7 @@ export class ScrollableGrid extends ScrollableArea {
         const column = properties.find(
           column =>
             position >= column.position &&
-            position <= column.position + (column.width || 0)
+            position <= column.position + (column.computedWidth || 0)
         );
         startIndex = column.index_;
         shift = Math.min(0, column.position - position);
@@ -458,9 +458,12 @@ export class ScrollableGrid extends ScrollableArea {
       const column = properties.find(
         column =>
           position >= column.position &&
-          column.position + column.width > position
+          column.position + column.computedWidth > position
       );
-      shift = column.position - position;
+      shift =
+        column.position -
+        (meta.lockedWidth || 0) * !this.props.noVerticalScrollbar -
+        position;
       index = column.index;
       startIndex = index;
     }
@@ -480,8 +483,18 @@ export class ScrollableGrid extends ScrollableArea {
       if (rows[0]) {
         const columns = rows[0].props.children;
         if (Array.isArray(columns) && columns.length) {
-          columnIndex =
-            this.state.scroll.columns.startIndex + columns.length - 1;
+          // columnIndex = this.state.scroll.columns.startIndex;
+          // if (
+          //   this.props.meta &&
+          //   !isNullOrUndefined(this.props.meta.lockedIndex)
+          // ) {
+          //   columnIndex = Math.max(
+          //     columnIndex,
+          //     this.props.meta.lockedIndex + 1
+          //   );
+          // }
+          // columnIndex += columns.length - 1;
+          columnIndex = columns[columns.length - 1].props.column.index_;
         }
       }
     }

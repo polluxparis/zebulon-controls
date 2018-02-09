@@ -296,7 +296,7 @@ export class ScrollableGrid extends ScrollableArea {
   onScroll = (axis, dir, cell, extension, positionRatio) => {
     const ix = cell ? cell[toAxis(axis)] : null;
     const scroll = { ...this.state.scroll };
-    console.log("scrollable", scroll, cell);
+    // console.log("scrollable", scroll, cell);
     const { height, width, rowHeight, data, dataLength } = this.props;
     const meta = this.state.meta;
     const properties = meta.properties;
@@ -391,7 +391,7 @@ export class ScrollableGrid extends ScrollableArea {
     }
     if (direction) {
       this.setState({ scroll: newScroll });
-      console.log("scrollable1", scroll, newScroll, cell);
+      // console.log("scrollable1", scroll, newScroll, cell);
       if (this.props.onScroll) {
         if (this.props.onScroll(newScroll, cell, extension) === false) {
           return false;

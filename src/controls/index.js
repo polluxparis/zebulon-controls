@@ -7,6 +7,7 @@ export * from "./Input";
 export * from "./Filter";
 export * from "./ScrollableArea";
 export * from "./ScrollableGrid";
+export * from "./ConfirmationModal";
 export * from "./Layout";
 export { constants, utils };
 // export utils;

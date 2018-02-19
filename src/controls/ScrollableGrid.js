@@ -26,7 +26,19 @@ export class ScrollableGrid extends ScrollableArea {
         properties: [{ width: props.rowWidth, position: 0, visibleIndex_: 0 }]
       };
     }
+    this.getRowWidth(props.meta, props.locked);
   }
+  getRowWidth = (meta, locked) => {
+    if (locked) {
+      this.rowWidth = meta.lockedWidth;
+      this.lockedWidth = 0;
+    } else {
+      this.lockedWidth = meta.lockedWidth || 0;
+      const lastColumn = meta.properties[meta.properties.length - 1];
+      this.rowWidth =
+        lastColumn.position + lastColumn.computedWidth - this.lockedWidth;
+    }
+  };
   componentWillReceiveProps(nextProps) {
     if (
       nextProps.height !== this.props.height ||
@@ -74,6 +86,7 @@ export class ScrollableGrid extends ScrollableArea {
     }
     if (this.props.meta !== nextProps.meta) {
       this.setState({ meta: nextProps.meta });
+      this.getRowWidth(nextProps.meta, nextProps.locked);
     }
   }
   shouldComponentUpdate(nextProps, nextState) {
@@ -313,36 +326,42 @@ export class ScrollableGrid extends ScrollableArea {
     // scroll event =>scroll by position
     if (axis === AxisType.COLUMNS) {
       if (ix === null && positionRatio !== null) {
-        const lastColumn = properties[properties.length - 1];
-        position =
-          (lastColumn.position + (lastColumn.width || 0) * !lastColumn.hidden) *
-          positionRatio;
-        const column = properties.find(
-          column =>
+        // const lastColumn = properties[properties.length - 1];
+        position = this.rowWidth * positionRatio;
+        const column = properties.find(column => {
+          const pos = column.position - this.lockedWidth;
+          return (
             column.computedWidth !== 0 &&
-            position >= column.position &&
-            position <= column.position + (column.width || 0)
-        );
-        shift = column.position - position;
+            position >= pos &&
+            position < pos + column.computedWidth
+          );
+        });
+        shift = column.position - position - this.lockedWidth;
         direction = 1;
         index = column.index_;
         startIndex = index;
       } else if (direction === 1) {
         startIndex = index;
-        position = properties[index].position;
+        position = properties[index].position - this.lockedWidth;
       } else {
         let visibleWidth = width - this.scrollbars.vertical.width;
         position = Math.max(
           0,
-          properties[index].position + properties[index].width - visibleWidth
+          properties[index].position -
+            this.lockedWidth +
+            properties[index].computedWidth -
+            visibleWidth
         );
-        const column = properties.find(
-          column =>
-            position >= column.position &&
-            position <= column.position + (column.computedWidth || 0)
-        );
+        const column = properties.find(column => {
+          const pos = column.position - this.lockedWidth;
+          return (
+            column.computedWidth !== 0 &&
+            position >= pos &&
+            position < pos + column.computedWidth
+          );
+        });
         startIndex = column.index_;
-        shift = Math.min(0, column.position - position);
+        shift = Math.min(0, column.position - position - this.lockedWidth);
       }
       // console.log("scroll", direction, shift, position);
       newScroll.columns = {
@@ -417,13 +436,13 @@ export class ScrollableGrid extends ScrollableArea {
   onWheel = e => {
     e.preventDefault();
     const sense = e.altKey || e.deltaX !== 0 ? "columns" : "rows";
+    const delta = e.deltaX === 0 ? e.deltaY : e.deltaX;
     const { height, rowHeight, width, data, dataLength, onScroll } = this.props;
     const scroll = { ...this.state.scroll };
     const meta = this.state.meta;
     const properties = meta.properties;
     let { shift, index, startIndex, position } = scroll[sense];
-    let direction =
-      sense === "columns" ? -Math.sign(e.deltaX) : -Math.sign(e.deltaY);
+    let direction = -Math.sign(delta);
     const visibleHeight = height - this.scrollbars.horizontal.width;
     const nRows = Math.ceil(visibleHeight / rowHeight);
 
@@ -450,21 +469,18 @@ export class ScrollableGrid extends ScrollableArea {
       }
     } else {
       direction = 1;
-      const lastColumn = properties[properties.length - 1];
-      position = Math.min(
-        Math.max(position + e.deltaX, 0),
-        lastColumn.position + lastColumn.width - width
-      );
-      const column = properties.find(
-        column =>
-          position >= column.position &&
-          column.position + column.computedWidth > position
-      );
-      shift =
-        column.position -
-        (meta.lockedWidth || 0) * !this.props.noVerticalScrollbar -
-        position;
-      index = column.index;
+      // const lastColumn = properties[properties.length - 1];
+      position = Math.min(Math.max(position + delta, 0), this.rowWidth - width);
+      const column = properties.find(column => {
+        const pos = column.position - this.lockedWidth;
+        return (
+          column.computedWidth !== 0 &&
+          position >= pos &&
+          position < pos + column.computedWidth
+        );
+      });
+      shift = column.position - position - this.lockedWidth;
+      index = column.index_;
       startIndex = index;
     }
     scroll[sense] = { index, direction, startIndex, shift, position };
@@ -505,38 +521,78 @@ export class ScrollableGrid extends ScrollableArea {
   // -----------------------------------------------
   // default-> list of items
   // -------------------------------------------------
+  // getRatios = props => {
+  //   const { height, width, rowHeight, rowWidth, data } = props;
+  //   const scroll = this.state.scroll;
+  //   // const meta = props.meta.properties;
+  //   // const lastColumn = meta[meta.length - 1];
+  //   // const columnsWidth = lastColumn.position + lastColumn.computedWidth;
+  //   const horizontalDisplay =
+  //     (width - (data.length * rowHeight > height ? ScrollbarSize : 0)) /
+  //     rowWidth;
+  //   const verticalDisplay =
+  //     (height - (rowWidth > width ? ScrollbarSize : 0)) /
+  //     (data.length * rowHeight);
+  //   // const horizontalDisplay = width / rowWidth;
+  //   // const verticalDisplay = height / (data.length * rowHeight);
+  //   return {
+  //     vertical: {
+  //       display: verticalDisplay,
+  //       position: Math.min(
+  //         scroll.rows.startIndex / data.length,
+  //         1 - verticalDisplay
+  //       )
+  //     },
+  //     horizontal: {
+  //       display: horizontalDisplay,
+  //       position: Math.min(
+  //         scroll.columns.position / rowWidth,
+  //         1 - horizontalDisplay
+  //       )
+  //     }
+  //   };
+  // };
   getRatios = props => {
-    const { height, width, rowHeight, rowWidth, data } = props;
-    const scroll = this.state.scroll;
-    // const meta = props.meta.properties;
-    // const lastColumn = meta[meta.length - 1];
-    // const columnsWidth = lastColumn.position + lastColumn.computedWidth;
+    const {
+      height,
+      width,
+      rowHeight,
+      scroll,
+      data,
+      dataLength,
+      meta,
+      locked
+    } = props;
+    this.getRowWidth(meta, locked);
     const horizontalDisplay =
-      (width - (data.length * rowHeight > height ? ScrollbarSize : 0)) /
-      rowWidth;
+      (width -
+        ((dataLength || data.length) * rowHeight > height
+          ? ScrollbarSize
+          : 0)) /
+      this.rowWidth;
     const verticalDisplay =
-      (height - (rowWidth > width ? ScrollbarSize : 0)) /
-      (data.length * rowHeight);
-    // const horizontalDisplay = width / rowWidth;
-    // const verticalDisplay = height / (data.length * rowHeight);
+      (height - (this.rowWidth > width ? ScrollbarSize : 0)) /
+      ((dataLength || data.length) * rowHeight);
     return {
       vertical: {
         display: verticalDisplay,
         position: Math.min(
-          scroll.rows.startIndex / data.length,
+          scroll.rows.startIndex / (dataLength || data.length),
           1 - verticalDisplay
         )
       },
       horizontal: {
         display: horizontalDisplay,
-        position: Math.min(
-          scroll.columns.position / rowWidth,
-          1 - horizontalDisplay
+        position: Math.max(
+          Math.min(
+            scroll.columns.position / this.rowWidth,
+            1 - horizontalDisplay
+          ),
+          0
         )
       }
     };
   };
-
   getContent = () => {
     const { data, height, rowHeight, width, rowWidth } = this.props;
     let i = 0,

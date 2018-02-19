@@ -76,7 +76,7 @@
 	cursor: default;
 	animation: 0.5s fadeIn;
 	border: 0.05em solid;
-	min-height: 30px;
+	/*min-height: 30px;*/
 	background-color: white;
 	border-radius: 5px;
 }
@@ -195,4 +195,29 @@
 	background-color: lightgrey;
 	border-bottom: unset;
 	color: black;
+}
+/*-------------------------*/
+.zebulon-modal-backdrop {
+	position: fixed;
+	top: 0px;
+	bottom: 0px;
+	left: 0px;
+	right: 0px;
+	backgroundColor: rgba(0, 0, 0, 0.3);
+	padding: 50px;
+}
+.zebulon-modal-confirmation {
+	display: flex;
+	flexDirection: column;
+	backgroundColor: #fff;
+	justifyContent: space-between;
+	borderRadius: 5px;
+	width: fit-content;
+	minWidth: 200px;
+	minHeight: 100px;
+	height: fit-content;
+	margin: 0 auto;
+	padding: 20px;
+	zIndex: 1000;
+	opacity: 1;
 }

@@ -28,7 +28,7 @@ export class ConfirmationModal extends React.Component {
 			this.buttons = [
 				<button
 					style={{ minWidth: 70, margin: 5 }}
-					onClick={() => this.props.onConfirm("yes")}
+					onClick={() => this.props.onConfirm("yes", type)}
 					tabIndex={0}
 					key={0}
 					autoFocus={true}
@@ -37,7 +37,7 @@ export class ConfirmationModal extends React.Component {
 				</button>,
 				<button
 					style={{ minWidth: 70, margin: 5 }}
-					onClick={() => this.props.onConfirm("no")}
+					onClick={() => this.props.onConfirm("no", type)}
 					tabIndex={1}
 					key={1}
 				>
@@ -45,11 +45,32 @@ export class ConfirmationModal extends React.Component {
 				</button>,
 				<button
 					style={{ minWidth: 70, margin: 5 }}
-					onClick={() => this.props.onConfirm("cancel")}
+					onClick={() => this.props.onConfirm("cancel", type)}
 					tabIndex={2}
 					key={2}
 				>
 					Cancel
+				</button>
+			];
+		} else if (type === "YesNo") {
+			this.buttons = [
+				<button
+					style={{ minWidth: 70, margin: 5 }}
+					onClick={() => this.onConfirm("yes", type)}
+					tabIndex={0}
+					key={0}
+					autoFocus={true}
+				>
+					Yes
+				</button>,
+				<button
+					style={{ minWidth: 70, margin: 5 }}
+					onClick={() => this.onConfirm("no", type)}
+					tabIndex={0}
+					key={1}
+					autoFocus={true}
+				>
+					No
 				</button>
 			];
 		} else if (type === "foreignKey") {
@@ -76,7 +97,7 @@ export class ConfirmationModal extends React.Component {
 			this.buttons = [
 				<button
 					style={{ minWidth: 70, margin: 5 }}
-					onClick={() => this.props.onConfirm("ok")}
+					onClick={() => this.onConfirm("ok", type)}
 					tabIndex={0}
 					key={0}
 					autoFocus={true}
@@ -115,10 +136,18 @@ export class ConfirmationModal extends React.Component {
 			);
 		}
 	};
+	onConfirm = (button, type) => {
+		this.props.onConfirm(button, type);
+		if (this.props.detail.callback) {
+			this.props.detail.callback(button, type);
+		}
+	};
 	onForeignKey = ok => {
+		this.props.onConfirm(
+			ok && this.row ? "ok" : "cancel",
+			this.props.detail.type
+		);
 		this.props.detail.callback(ok && this.row ? this.row || false : false);
-		// console.log("foreignKey", this.foreignTable.table.row);
-		this.props.onConfirm(ok && this.row ? "ok" : "cancel");
 	};
 	render() {
 		// Render nothing if the "show" prop is false

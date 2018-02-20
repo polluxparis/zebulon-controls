@@ -24,11 +24,12 @@ export class ConfirmationModal extends React.Component {
 	}
 	init = props => {
 		const { text, type } = props.detail;
+		// do you wnat to save before
 		if (type === "YesNoCancel") {
 			this.buttons = [
 				<button
 					style={{ minWidth: 70, margin: 5 }}
-					onClick={() => this.props.onConfirm("yes", type)}
+					onClick={() => this.onConfirm("yes", type, true)}
 					tabIndex={0}
 					key={0}
 					autoFocus={true}
@@ -37,7 +38,7 @@ export class ConfirmationModal extends React.Component {
 				</button>,
 				<button
 					style={{ minWidth: 70, margin: 5 }}
-					onClick={() => this.props.onConfirm("no", type)}
+					onClick={() => this.onConfirm("no", type, true)}
 					tabIndex={1}
 					key={1}
 				>
@@ -45,18 +46,19 @@ export class ConfirmationModal extends React.Component {
 				</button>,
 				<button
 					style={{ minWidth: 70, margin: 5 }}
-					onClick={() => this.props.onConfirm("cancel", type)}
+					onClick={() => this.onConfirm("cancel", type, false)}
 					tabIndex={2}
 					key={2}
 				>
 					Cancel
 				</button>
 			];
+			// do you want to continue
 		} else if (type === "YesNo") {
 			this.buttons = [
 				<button
 					style={{ minWidth: 70, margin: 5 }}
-					onClick={() => this.onConfirm("yes", type)}
+					onClick={() => this.onConfirm("yes", type, true)}
 					tabIndex={0}
 					key={0}
 					autoFocus={true}
@@ -65,7 +67,7 @@ export class ConfirmationModal extends React.Component {
 				</button>,
 				<button
 					style={{ minWidth: 70, margin: 5 }}
-					onClick={() => this.onConfirm("no", type)}
+					onClick={() => this.onConfirm("no", type, false)}
 					tabIndex={0}
 					key={1}
 					autoFocus={true}
@@ -73,6 +75,7 @@ export class ConfirmationModal extends React.Component {
 					No
 				</button>
 			];
+			// foreign key selection
 		} else if (type === "foreignKey") {
 			this.buttons = [
 				<button
@@ -93,11 +96,12 @@ export class ConfirmationModal extends React.Component {
 					Cancel
 				</button>
 			];
+			// blocking alert
 		} else if (type === "Ok") {
 			this.buttons = [
 				<button
 					style={{ minWidth: 70, margin: 5 }}
-					onClick={() => this.onConfirm("ok", type)}
+					onClick={() => this.onConfirm("ok", type, false)}
 					tabIndex={0}
 					key={0}
 					autoFocus={true}
@@ -136,18 +140,20 @@ export class ConfirmationModal extends React.Component {
 			);
 		}
 	};
-	onConfirm = (button, type) => {
+	onConfirm = (button, type, carryOn) => {
 		this.props.onConfirm(button, type);
 		if (this.props.detail.callback) {
-			this.props.detail.callback(button, type);
+			this.props.detail.callback(carryOn, button);
 		}
 	};
-	onForeignKey = ok => {
+	onForeignKey = carryOn => {
 		this.props.onConfirm(
-			ok && this.row ? "ok" : "cancel",
+			carryOn && this.row ? "ok" : "cancel",
 			this.props.detail.type
 		);
-		this.props.detail.callback(ok && this.row ? this.row || false : false);
+		this.props.detail.callback(
+			carryOn && this.row ? this.row || false : false
+		);
 	};
 	render() {
 		// Render nothing if the "show" prop is false

@@ -5,6 +5,7 @@ export class ConfirmationModal extends React.Component {
 		if (props.show) {
 			this.init(props);
 		}
+		this.state = { status: {}, body: this.body };
 	}
 	componentWillReceiveProps(nextProps) {
 		if (nextProps.keyEvent !== this.props.keyEvent) {
@@ -20,10 +21,11 @@ export class ConfirmationModal extends React.Component {
 		}
 		if (nextProps.show) {
 			this.init(nextProps);
+			this.setState({ body: this.body });
 		}
 	}
-	init = props => {
-		const { text, type } = props.detail;
+	init = (props, refresh) => {
+		const { body, type, noRefresh } = props.detail;
 		// do you wnat to save before
 		if (type === "YesNoCancel") {
 			this.buttons = [
@@ -96,6 +98,24 @@ export class ConfirmationModal extends React.Component {
 					Cancel
 				</button>
 			];
+			if (!noRefresh) {
+				this.buttons.push(
+					<button
+						style={{ minWidth: 70, margin: 5 }}
+						onClick={() => {
+							this.init(this.props, true);
+							this.setState({
+								status: { loading: true },
+								body: this.body
+							});
+						}}
+						tabIndex={2}
+						key={2}
+					>
+						Refresh
+					</button>
+				);
+			}
 			// blocking alert
 		} else if (type === "Ok") {
 			this.buttons = [
@@ -111,33 +131,33 @@ export class ConfirmationModal extends React.Component {
 			];
 		}
 
-		this.body = <div>{text}</div>;
-		if (Array.isArray(text)) {
-			this.body = text.map((line, index) => (
+		this.body = <div>{body}</div>;
+		if (Array.isArray(body)) {
+			this.body = body.map((line, index) => (
 				<div key={index}>{line}</div>
 			));
 		} else if (type === "foreignKey" && props.detail.callback) {
-			this.body = (
-				<div>
-					{React.cloneElement(text, {
-						callbackForeignKey: message => {
-							props.onConfirm(
-								message === false ? "cancel" : "ok"
-							);
-							props.detail.callback(message);
-						},
-						ref: ref => {
-							this.foreignTable = ref;
-						},
-						onDoubleClick: () => this.onForeignKey(true),
-						keyEvent: props.keyEvent,
-						onRowEnter: ({ row }) => {
-							this.row = row;
-							return true;
-						}
-					})}
-				</div>
-			);
+			const foreignProps = {
+				callbackForeignKey: message => {
+					props.onConfirm(message === false ? "cancel" : "ok");
+					props.detail.callback(message);
+				},
+				ref: ref => {
+					this.foreignTable = ref;
+				},
+				onDoubleClick: () => this.onForeignKey(true),
+				keyEvent: props.keyEvent,
+				onRowEnter: ({ row }) => {
+					this.row = row;
+					return true;
+				},
+				isModal: true,
+				status: this.state.status,
+				refresh,
+				ref: ref => (this.zebulonTable = ref)
+			};
+
+			this.body = <div>{React.cloneElement(body, foreignProps)}</div>;
 		}
 	};
 	onConfirm = (button, type, carryOn) => {
@@ -166,7 +186,7 @@ export class ConfirmationModal extends React.Component {
 					className="modal zebulon-modal-confirmation"
 					style={{ display: "flex", top: 100 }}
 				>
-					{this.body}
+					{this.state.body}
 					<div className="footer" style={{ display: "flex" }}>
 						{this.buttons}
 					</div>

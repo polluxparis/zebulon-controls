@@ -137,7 +137,7 @@ export class ContextualMenu extends Component {
 		window.addEventListener("MENU_EVENT", this.handleEvent);
 		this.div = document.getElementById(this.state.componentId);
 	}
-	componentDidUnMount() {
+	componentWillUnmount() {
 		window.removeEventListener("MENU_EVENT", this.handleEvent);
 	}
 	close = () => {

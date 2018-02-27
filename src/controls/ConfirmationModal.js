@@ -31,7 +31,7 @@ export class ConfirmationModal extends React.Component {
 			this.buttons = [
 				<button
 					style={{ minWidth: 70, margin: 5 }}
-					onClick={() => this.onConfirm("yes", type, true)}
+					onClick={() => this.onConfirm(true, true)}
 					tabIndex={0}
 					key={0}
 					autoFocus={true}
@@ -40,7 +40,7 @@ export class ConfirmationModal extends React.Component {
 				</button>,
 				<button
 					style={{ minWidth: 70, margin: 5 }}
-					onClick={() => this.onConfirm("no", type, true)}
+					onClick={() => this.onConfirm(true, false)}
 					tabIndex={1}
 					key={1}
 				>
@@ -48,7 +48,7 @@ export class ConfirmationModal extends React.Component {
 				</button>,
 				<button
 					style={{ minWidth: 70, margin: 5 }}
-					onClick={() => this.onConfirm("cancel", type, false)}
+					onClick={() => this.onConfirm(false, false)}
 					tabIndex={2}
 					key={2}
 				>
@@ -60,7 +60,7 @@ export class ConfirmationModal extends React.Component {
 			this.buttons = [
 				<button
 					style={{ minWidth: 70, margin: 5 }}
-					onClick={() => this.onConfirm("yes", type, true)}
+					onClick={() => this.onConfirm(true)}
 					tabIndex={0}
 					key={0}
 					autoFocus={true}
@@ -69,7 +69,7 @@ export class ConfirmationModal extends React.Component {
 				</button>,
 				<button
 					style={{ minWidth: 70, margin: 5 }}
-					onClick={() => this.onConfirm("no", type, false)}
+					onClick={() => this.onConfirm(false)}
 					tabIndex={0}
 					key={1}
 					autoFocus={true}
@@ -78,11 +78,15 @@ export class ConfirmationModal extends React.Component {
 				</button>
 			];
 			// foreign key selection
-		} else if (type === "foreignKey") {
+		} else if (
+			type === "foreignKey" ||
+			type === "OkCancel" ||
+			type === "conflict"
+		) {
 			this.buttons = [
 				<button
 					style={{ minWidth: 70, margin: 5 }}
-					onClick={() => this.onForeignKey(true)}
+					onClick={() => this.onConfirm(true)}
 					tabIndex={0}
 					key={0}
 					autoFocus={true}
@@ -91,14 +95,14 @@ export class ConfirmationModal extends React.Component {
 				</button>,
 				<button
 					style={{ minWidth: 70, margin: 5 }}
-					onClick={() => this.onForeignKey(false)}
+					onClick={() => this.onConfirm(false)}
 					tabIndex={1}
 					key={1}
 				>
 					Cancel
 				</button>
 			];
-			if (!noRefresh) {
+			if (!noRefresh && type === "foreignKey") {
 				this.buttons.push(
 					<button
 						style={{ minWidth: 70, margin: 5 }}
@@ -121,7 +125,7 @@ export class ConfirmationModal extends React.Component {
 			this.buttons = [
 				<button
 					style={{ minWidth: 70, margin: 5 }}
-					onClick={() => this.onConfirm("ok", type, false)}
+					onClick={() => this.onConfirm(false)}
 					tabIndex={0}
 					key={0}
 					autoFocus={true}
@@ -138,14 +142,15 @@ export class ConfirmationModal extends React.Component {
 			));
 		} else if (type === "foreignKey" && props.detail.callback) {
 			const foreignProps = {
-				callbackForeignKey: message => {
-					props.onConfirm(message === false ? "cancel" : "ok");
-					props.detail.callback(message);
+				callbackForeignKey: (ok, message) => {
+					this.row = message;
+					this.onConfirm(ok);
+					// props.detail.callback(message);
 				},
 				ref: ref => {
 					this.foreignTable = ref;
 				},
-				onDoubleClick: () => this.onForeignKey(true),
+				onDoubleClick: () => this.onConfirm(true),
 				keyEvent: props.keyEvent,
 				onRowEnter: ({ row }) => {
 					this.row = row;
@@ -158,23 +163,71 @@ export class ConfirmationModal extends React.Component {
 			};
 
 			this.body = <div>{React.cloneElement(body, foreignProps)}</div>;
+		} else if (type === "conflict" && props.detail.callback) {
+			const conflictProps = {
+				// callbackForeignKey: message => {
+				// 	props.onConfirm(message === false ? "cancel" : "ok");
+				// 	props.detail.callback(message);
+				// },
+				// ref: ref => {
+				// 	this.foreignTable = ref;
+				// },
+				// onDoubleClick: () => this.onForeignKey(true),
+				keyEvent: props.keyEvent,
+				ref: ref => (this.zebulonTable = ref)
+				// ,
+				// onRowEnter: ({ row }) => {
+				// 	this.row = row;
+				// 	return true;
+				// },
+				// isModal: true,
+				// status: this.state.status,
+				// refresh,
+				// ref: ref => (this.zebulonTable = ref)
+			};
+
+			this.body = <div>{React.cloneElement(body, conflictProps)}</div>;
 		}
 	};
-	onConfirm = (button, type, carryOn) => {
-		this.props.onConfirm(button, type);
+	onConfirm = (carryOn_, ok) => {
+		let carryOn = carryOn_;
+		let message = ok;
+		if (this.props.detail.type === "foreignKey") {
+			carryOn = carryOn && this.row !== undefined;
+			message = this.row;
+		} else if (this.props.detail.type === "conflict") {
+			message = Object.values(this.zebulonTable.state.updatedRows)
+				.filter(row => row.checked_ && row.index_ !== undefined)
+				.map(row => row.index_); // a voir
+		}
+
+		// const confirm = { button, type };
+		// let message;
+		// if (type === "foreignKey") {
+		// 	// confirm.button = carryOn && this.row ? "ok" : "cancel";
+		// this.props.onConfirm(
+		// 	carryOn && this.row ? "ok" : "cancel",
+		// 	this.props.detail.type
+		// );
+		// this.props.detail.callback(
+		// 	carryOn && this.row ? this.row || false : false
+		// );
+		// 	message = this.row;
+		// }
+		this.props.onConfirm();
 		if (this.props.detail.callback) {
-			this.props.detail.callback(carryOn, button);
+			this.props.detail.callback(carryOn, message);
 		}
 	};
-	onForeignKey = carryOn => {
-		this.props.onConfirm(
-			carryOn && this.row ? "ok" : "cancel",
-			this.props.detail.type
-		);
-		this.props.detail.callback(
-			carryOn && this.row ? this.row || false : false
-		);
-	};
+	// onForeignKey = carryOn => {
+	// 	this.props.onConfirm(
+	// 		carryOn && this.row ? "ok" : "cancel",
+	// 		this.props.detail.type
+	// 	);
+	// 	this.props.detail.callback(
+	// 		carryOn && this.row ? this.row || false : false
+	// 	);
+	// };
 	render() {
 		// Render nothing if the "show" prop is false
 		if (!this.props.show) {

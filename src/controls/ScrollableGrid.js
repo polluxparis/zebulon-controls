@@ -32,7 +32,7 @@ export class ScrollableGrid extends ScrollableArea {
     if (locked) {
       this.rowWidth = meta.lockedWidth;
       this.lockedWidth = 0;
-    } else {
+    } else if (meta) {
       this.lockedWidth = meta.lockedWidth || 0;
       const lastColumn = meta.properties[meta.properties.length - 1];
       this.rowWidth =
@@ -333,7 +333,7 @@ export class ScrollableGrid extends ScrollableArea {
           return (
             column.computedWidth !== 0 &&
             position >= pos &&
-            position < pos + column.computedWidth
+            position < pos + column.computedWidth - 0.0001
           );
         });
         shift = column.position - position - this.lockedWidth;
@@ -374,7 +374,7 @@ export class ScrollableGrid extends ScrollableArea {
       // console.log(column, newScroll);
       // scroll by row step
     } else if (axis === AxisType.ROWS) {
-      const visibleHeight = height - this.scrollbars.horizontal.width;
+      const visibleHeight = height - this.scrollbars.horizontal.width2;
       const nRows = Math.ceil(visibleHeight / rowHeight);
       // scroll event
       if (ix === null && positionRatio !== null) {
@@ -443,7 +443,7 @@ export class ScrollableGrid extends ScrollableArea {
     const properties = meta.properties;
     let { shift, index, startIndex, position } = scroll[sense];
     let direction = -Math.sign(delta);
-    const visibleHeight = height - this.scrollbars.horizontal.width;
+    const visibleHeight = height - this.scrollbars.horizontal.width2;
     const nRows = Math.ceil(visibleHeight / rowHeight);
 
     if (sense === "rows") {
@@ -567,7 +567,7 @@ export class ScrollableGrid extends ScrollableArea {
     const horizontalDisplay =
       (width -
         ((dataLength || data.length) * rowHeight > height
-          ? ScrollbarSize
+          ? ScrollbarSize * !props.noVerticalScrollbar
           : 0)) /
       this.rowWidth;
     const verticalDisplay =

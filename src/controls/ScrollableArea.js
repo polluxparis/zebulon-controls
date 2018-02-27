@@ -19,7 +19,7 @@ export class ScrollableArea extends Component {
       scrollbars.vertical = { width: ScrollbarSize };
     }
     if (ratios.horizontal.display < 1) {
-      scrollbars.horizontal = { width: ScrollbarSize };
+      scrollbars.horizontal = { width: ScrollbarSize, width2: ScrollbarSize };
     }
     if (scrollbars.vertical && scrollbars.horizontal) {
       scrollbars.horizontal.length = width - ScrollbarSize;
@@ -34,13 +34,17 @@ export class ScrollableArea extends Component {
           width - ScrollbarSize,
           (width - ScrollbarSize) / ratios.horizontal.display
         ),
-        width: 0
+        width: 0,
+        width2: 0
       };
-    } else if (scrollbars.horizontal && !this.props.noVerticalScrollbar) {
+    } else if (scrollbars.horizontal) {
       scrollbars.horizontal.length = Math.min(
         width,
         width / ratios.horizontal.display
       );
+      if (this.props.locked) {
+        scrollbars.horizontal.width = 0;
+      }
       scrollbars.vertical = {
         length: Math.min(
           height - ScrollbarSize,
@@ -51,13 +55,15 @@ export class ScrollableArea extends Component {
     } else {
       scrollbars.horizontal = {
         length: Math.min(width, width / ratios.horizontal.display),
-        width: 0
+        width: 0,
+        width2: 0
       };
       scrollbars.vertical = {
         length: Math.min(height, height / ratios.vertical.display),
         width: 0
       };
     }
+
     scrollbars.horizontal.innerSize = Math.max(
       30,
       width * ratios.horizontal.display

@@ -42,7 +42,7 @@ export class Layout extends Component {
 
   componentWillReceiveProps(nextProps) {
     if (this.props.keyEvent !== nextProps.keyEvent) {
-      if (nextProps.keyEvent.which === 27) {
+      if (nextProps.keyEvent.which === 27 && this.contextualMenu) {
         this.contextualMenu.close();
       }
       const zoom = utils.isZoom(nextProps.keyEvent);
@@ -62,6 +62,15 @@ export class Layout extends Component {
         return;
       }
       this.keyEvent = true;
+    }
+    if (
+      this.props.sizes.height !== nextProps.sizes.height ||
+      this.props.sizes.width != this.state.layout
+    ) {
+      const layout = this.state.layout;
+      layout.height = nextProps.sizes.height;
+      layout.width = nextProps.sizes.width;
+      this.setState({ layout });
     }
   }
   shouldComponentUpdate(nextProps) {
@@ -230,7 +239,7 @@ export class Layout extends Component {
                 "zebulon-layout-tab-selected-active":
                   isTab && layout.visible && this.state.activeLayout === id
               })}
-              draggable={true}
+              draggable={this.state.layout.updatable}
               style={{
                 textAlign: "center",
                 width: widthBody / layouts.length,
@@ -298,11 +307,9 @@ export class Layout extends Component {
           {components[
             content
           ].component(heightBody, widthBody, layout.calculatedZoom, {
+            ...this.props,
             keyEvent: this.state.keyEvent,
-            isActive: this.state.activeLayout === layout.id,
-            // dataTable: this.props.data,
-            // meta: this.props.meta,
-            functions: this.props.functions
+            isActive: this.state.activeLayout === layout.id
           })}
         </div>
       ) : (
@@ -472,7 +479,7 @@ export class Layout extends Component {
       layout.content = item.componentId;
     }
     this.setState({ layout: this.state.layout });
-    console.log("clickmenu", data, item, layout);
+    // console.log("clickmenu", data, item, layout);
   };
   // ---------------------------------------------
   getMenu = (menuId, data) => {
@@ -490,7 +497,7 @@ export class Layout extends Component {
       componentId: this.state.components[key].id,
       onClick: this.handleClickMenu
     }));
-    console.log("getMenu", menuId, data);
+    // console.log("getMenu", menuId, data);
     menus.push({
       id: menus.length,
       type: "menu-item",
@@ -596,7 +603,9 @@ export class Layout extends Component {
   // drag and drop
   //----------------------------------------
   handleDragStart = (e, type) => {
-    this.contextualMenu.close();
+    if (this.contextualMenu) {
+      this.contextualMenu.close();
+    }
     // this.dragMessage = { type, index: e.target.id, x: e.pageX };
     this.pageX = e.pageX;
     this.pageY = e.pageY;
@@ -638,18 +647,16 @@ export class Layout extends Component {
       // this.setState({ dragPreviewStyle });
     }
     // e.stopPropagation();
-    console.log(
-      "dragstart",
-      e.pageX,
-      e.pageY,
-      e.dataTransfer.getData("text"),
-      e.target,
-      e.clientOffset
-    );
+    // console.log(
+    //   "dragstart",
+    //   e.pageX,
+    //   e.pageY,
+    //   e.dataTransfer.getData("text"),
+    //   e.target,
+    //   e.clientOffset
+    // );
   };
   handleDragOver = e => {
-    // this.pageY2 = e.pageY;
-    // this.pageX2 = e.pageX;
     if (this.dragId) {
       e.preventDefault();
       if (this.dragId.startsWith("layout-resize-handle")) {
@@ -660,24 +667,6 @@ export class Layout extends Component {
         } else {
           dragPreviewStyle.top += e.pageY - this.pageY;
         }
-        // this.pageX = e.pageX;
-        // this.pageY = e.pageY;
-        // this.setState({ dragPreviewStyle });
-        // const elt = this.preview.cloneNode(false);
-        // this.preview.remove();
-        // this.preview.style.left = `${dragPreviewStyle.left}px`;
-        // this.preview.style.top = `${dragPreviewStyle.top}px`;
-        // this.preview.transform = `translate(${dragPreviewStyle.left}px,${dragPreviewStyle.top}px)`;
-
-        // this.preview.transform = `translateY(${dragPreviewStyle.top}px)`;
-        // this.preview.style.height = `${dragPreviewStyle.height}px`;
-        // this.preview.style.width = `${dragPreviewStyle.width}px`;
-        // this.preview.style["background-color"] = "blue";
-        // this.preview.style.position = "relative";
-        // this.preview.style.display = "block";
-        // e.preventDefault();
-        // this.dragLayer.appendChild(this.preview);
-        console.log("dragover", this.dragId, dragPreviewStyle);
       } else if (
         this.dragId.startsWith("layout-title") &&
         (!e.target.id.startsWith("layout-title") ||
@@ -775,19 +764,18 @@ export class Layout extends Component {
             }
           }
           this.setState({ layout: this.state.layout });
-          console.log(
-            "dropbody",
-            body,
-            e.pageX,
-            e.pageY,
-            rect,
-            dragIds,
-            dropIds,
-            e.target
-          );
+          // console.log(
+          //   "dropbody",
+          //   body,
+          //   e.pageX,
+          //   e.pageY,
+          //   rect,
+          //   dragIds,
+          //   dropIds,
+          //   e.target
+          // );
         }
       }
-
       this.dragId = null;
     }
   };
@@ -833,7 +821,17 @@ export class Layout extends Component {
     //     <div style={{ display: "none" }} ref={ref => (this.div = ref)} />
     //   );
     // }
-
+    if (this.props.visible === false) {
+      return null;
+    }
+    const menu = this.state.layout.updatable ? (
+      <ContextualMenu
+        key="layout-menu"
+        getMenu={this.getMenu}
+        componentId="layout"
+        ref={ref => (this.contextualMenu = ref)}
+      />
+    ) : null;
     return (
       // <div ref={ref => (this.dragLayer = ref)}>
       <div
@@ -844,7 +842,11 @@ export class Layout extends Component {
         onDragLeave={e => console.log("leave", e)}
         onDrop={this.handleDrop}
         onClick={e => {
-          if (!e.defaultPrevented && !e.target.id.startsWith("menuRename")) {
+          if (
+            !e.defaultPrevented &&
+            !e.target.id.startsWith("menuRename") &&
+            this.contextualMenu
+          ) {
             this.contextualMenu.close();
           }
         }}
@@ -852,12 +854,7 @@ export class Layout extends Component {
         ref={ref => (this.dragLayer = ref)}
       >
         {this.computeLayout(this.state.layout, this.state.activeLayout)}
-        <ContextualMenu
-          key="layout-menu"
-          getMenu={this.getMenu}
-          componentId="layout"
-          ref={ref => (this.contextualMenu = ref)}
-        />
+        {menu}
       </div>
       // (  <div
       //     id="layout-preview"

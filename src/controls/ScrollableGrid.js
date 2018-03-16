@@ -46,7 +46,9 @@ export class ScrollableGrid extends ScrollableArea {
     ) {
       const ratios = this.getRatios(nextProps);
       if (
+        ratios &&
         nextProps.width !== this.props.width &&
+        this.ratios &&
         this.ratios.horizontal.position >
           1 - Math.min(ratios.horizontal.display, 1)
       ) {
@@ -60,6 +62,7 @@ export class ScrollableGrid extends ScrollableArea {
       }
       if (
         nextProps.height !== this.props.height &&
+        this.ratios &&
         this.ratios.vertical.position > 1 - Math.min(ratios.vertical.display, 1)
       ) {
         this.onScroll(
@@ -563,21 +566,24 @@ export class ScrollableGrid extends ScrollableArea {
       meta,
       locked
     } = props;
+    if (data.length === 0) {
+      return false;
+    }
     this.getRowWidth(meta, locked);
     const horizontalDisplay =
       (width -
-        ((dataLength || data.length) * rowHeight > height
+        ((dataLength || data.length || 1) * rowHeight > height
           ? ScrollbarSize * !props.noVerticalScrollbar
           : 0)) /
       this.rowWidth;
     const verticalDisplay =
       (height - (this.rowWidth > width ? ScrollbarSize : 0)) /
-      ((dataLength || data.length) * rowHeight);
+      ((dataLength || data.length || 1) * rowHeight);
     return {
       vertical: {
         display: verticalDisplay,
         position: Math.min(
-          scroll.rows.startIndex / (dataLength || data.length),
+          scroll.rows.startIndex / (dataLength || data.length || 1),
           1 - verticalDisplay
         )
       },

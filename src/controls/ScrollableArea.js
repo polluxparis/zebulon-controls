@@ -197,6 +197,9 @@ export class ScrollableArea extends Component {
     const { height, width, gridId } = this.props;
 
     this.ratios = this.getRatios(this.props);
+    if (!this.ratios) {
+      return null;
+    }
     const scrollbars = this.getScrollbars(height, width, this.ratios);
     const content = this._getContent(height, width);
     const style = {

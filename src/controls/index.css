@@ -5,6 +5,7 @@
 	padding: 0;
 	background-color: inherit;
 	display: flex;
+	height: inherit;
 }
 .zebulon-input-label: {
 	border: solid lightgrey thin;

@@ -1,210 +1,347 @@
 import React, { Component } from "react";
-import { dateToString, stringToDate, isNullOrUndefined } from "./utils/generic";
+// import { utils } from "zebulon-controls";
+import {
+  dateToString,
+  stringToDate,
+  numberToString,
+  isNullOrUndefined,
+  isPromise
+} from "./utils/generic";
 
-const formatValue = (value, dataType, format) => {
+const formatValue = (props, value, focused) => {
+  // console.log(1);
+  const { row, column, status, params, data, inputType, editable } = props;
+  const { dataType, formatFunction } = column || { dataType: props.dataType };
   let v = isNullOrUndefined(value) ? "" : value;
-  if (dataType === "boolean" && value === "") {
+  if (
+    formatFunction &&
+    inputType !== "filter" &&
+    (!(focused && editable) && dataType !== "boolean")
+  ) {
+    v = formatFunction({ value: v, row, column, params, status, data });
+  } else if (dataType === "boolean" && value === "") {
     v = null;
   } else if (dataType === "date" && value !== null) {
-    v = dateToString(v, format || "dd/mm/yyyy");
+    v = dateToString(v, undefined || "dd/mm/yyyy");
+  } else if (dataType === "number" && value !== null) {
+    v = focused && editable ? v.toString() : numberToString(v);
   }
-  // console.log(value, v, type);
   return v;
 };
 export class Input extends Component {
   constructor(props) {
     super(props);
+    this.column = props.column || {
+      dataType: props.dataType,
+      id: props.id,
+      index_: 0,
+      caption: props.label
+    };
     let value = props.value;
-    if (props.object && props.objectKey) {
-      value = props.object[props.objectKey];
-    }
     this.state = {
       value,
-      formatedValue: formatValue(value, props.dataType, props.format)
+      formatedValue: formatValue(props, value, props.focused),
+      loaded: true
     };
+    this.focused = props.focused;
+    if (props.select && props.editable && props.focused) {
+      let options = props.select;
+      if (typeof options === "function") {
+        options = options(props.row);
+      }
+      if (isPromise(options)) {
+        this.state.options = [];
+        options.then(options => {
+          this.setState({ options });
+        });
+      } else {
+        this.state.options = options;
+      }
+    }
   }
   componentWillReceiveProps(nextProps) {
-    let value = nextProps.value;
-    if (nextProps.object && nextProps.objectKey) {
-      value = nextProps.object[nextProps.objectKey];
-    }
-    if (value !== this.state.value) {
+    this.column = nextProps.column || {
+      dataType: nextProps.dataType,
+      id: nextProps.id,
+      index_: 0,
+      caption: nextProps.label
+    };
+    this.focused = nextProps.focused;
+    const formatedValue = formatValue(nextProps, nextProps.value, this.focused);
+    if (
+      nextProps.value !== this.state.value ||
+      formatedValue !== this.state.formatedValue
+    ) {
       this.setState({
-        value,
-        formatedValue: formatValue(
-          nextProps.value,
-          nextProps.dataType,
-          nextProps.format
-        )
+        value: nextProps.value,
+        formatedValue
       });
     }
+    const options = nextProps.select;
+    if (options) {
+      if (isPromise(options)) {
+        this.state.options = [];
+        options.then(options => {
+          this.setState({ options });
+        });
+      } else {
+        this.setState({ options });
+      }
+    }
   }
-  value = () => {
-    return this.state.formatedValue || null;
-  };
   validateInput = value => {
     let v = value;
+    const dataType = this.column.dataType;
     if (this.props.validateInput) {
-      v = this.props.validateInput(value);
-    } else if (this.props.dataType === "number") {
+      return this.props.validateInput(value);
+    } else if (dataType === "number") {
       v =
-        value === "" ? null : isNaN(Number(value)) ? undefined : Number(value);
-    } else if (this.props.dataType === "date") {
-      v =
-        value === "" || value === value.match(/[0123456789.:/ ]+/g)[0]
-          ? value
-          : undefined;
+        value.slice(value.length - 1, value.length) === "."
+          ? value.slice(0, value.length - 1)
+          : value;
+      return !isNaN(Number(v));
+    } else if (dataType === "date") {
+      v = value.match(/[0123456789.:/ ]+/g);
+      return value === "" || (v.length === 1 && v[0] === value);
     }
-    return v;
+    return true;
   };
 
   handleChange = e => {
-    if (this.props.editable) {
-      let value = e.target.value;
-      let validatedValue = this.validateInput(value);
-      if (this.props.dataType === "boolean") {
-        if (this.props.inputType === "filter" && this.state.value === false)
+    const { row, editable, inputType, onChange, filterTo } = this.props;
+    const column = this.column;
+    const { dataType, format } = column || { dataType: this.props.dataType };
+    if (editable) {
+      let value = e.target.value,
+        validatedValue;
+      if (!this.validateInput(value)) return;
+      // selection of an object
+      if (column.reference && column.select) {
+        validatedValue = column.selectItems[e.target.value];
+      } else if (dataType === "boolean") {
+        if (inputType === "filter" && this.state.value === false)
           validatedValue = null;
-        else validatedValue = !this.state.value;
-        value = validatedValue;
+        else {
+          validatedValue = !this.state.value;
+          value = validatedValue;
+        }
+      } else if (dataType === "date") {
+        validatedValue = stringToDate(value, format);
+      } else if (dataType === "number") {
+        validatedValue = value === "" ? null : Number(value);
+        // value = formatValue(this.props, validatedValue);
+      } else {
+        validatedValue = value;
       }
-      if (validatedValue !== undefined) {
-        // this.setState({ formatedValue: value, value: validatedValue });
-        if (this.props.dataType === "date") {
-          validatedValue = stringToDate(validatedValue, this.props.format);
-          if (validatedValue !== undefined) {
-            value = formatValue(
-              validatedValue,
-              this.props.dataType,
-              this.props.format
-            );
-          }
+      if (onChange) {
+        if (onChange(validatedValue, row, column, filterTo) === false) {
+          return false;
         }
       }
-      // if (    validatedValue !== undefined) {
-      if (this.props.row && this.props.id)
-        this.props.row[this.props.id] = validatedValue;
-      if (this.props.onChange)
-        if (this.props.onChange(validatedValue) === false) return;
+      if (row) {
+        const columnId =
+          column.reference && column.select ? column.reference : column.id;
+        row[columnId] = validatedValue;
+        if (
+          column.setForeignKeyAccessorFunction &&
+          column.reference &&
+          column.select
+        ) {
+          // const v = column.primaryKeyAccessorFunction({
+          //   row: { [column.reference]: validatedValue }
+          // });
+          // const fk = column.foreignKeyAccessor.slice(4);
+          // row[fk] = Number(v);
+          column.setForeignKeyAccessorFunction({
+            value: validatedValue.pk_,
+            row
+          });
+        }
+      }
       this.setState({ formatedValue: value, value: validatedValue });
     }
   };
-  handleBlur = e => {
-    let value = e.target.value;
-    if (this.props.dataType === "date") {
-      value = stringToDate(value, this.props.format);
-      if (value === undefined) {
-        this.setState({ value: null });
+  handleBlur = () => {
+    this.setState({
+      formatedValue: formatValue(this.props, this.state.value, false)
+    });
+  };
+  handleFocus = e => {
+    const { inputType, onFocus, row } = this.props;
+    const column = this.column;
+    if (inputType === "filter") {
+      onFocus(e, row, column);
+      if (column.filterType !== "values") {
+        this.focused = true;
+        // console.log("focus", this.state.value);
+        const formatedValue = formatValue(
+          this.props,
+          this.state.value,
+          this.focused
+        );
+        this.setState({
+          formatedValue
+        });
       }
-    }
-    if (this.props.onBlur) {
-      this.props.onBlur(value);
     }
   };
-
   render() {
+    const {
+      row,
+      editable,
+      inputType,
+      // onChange,
+      hasFocus,
+      select,
+      label,
+      className,
+      style,
+      onClick,
+      onDoubleClick,
+      onMouseOver,
+      // onFocus,
+      filterTo,
+      tabIndex,
+      id
+    } = this.props;
+    let input;
+    let value = this.state.formatedValue;
+    const column = this.column;
+    const { dataType } = column;
     if (
-      this.props.row &&
-      !(this.props.focused && this.props.editable) &&
-      this.props.dataType !== "boolean"
+      inputType !== "filter" &&
+      (!((this.focused || this.props.column === undefined) && editable) &&
+        dataType !== "boolean")
     ) {
-      return (
+      input = (
         <div
-          key={this.props.id}
-          className={
-            this.props.className || "zebulon-input zebulon-input-select"
-          }
-          style={this.props.style}
-          onClick={this.props.onClick}
-          // onDoubleClick={e => onDoubleClick(e, row, column)}
-          onMouseOver={this.props.onMouseOver}
+          id={id}
+          key={id}
+          className={className || "zebulon-input zebulon-input-select"}
+          style={style}
+          onClick={onClick}
+          onMouseOver={onMouseOver}
+          onDoubleClick={onDoubleClick}
         >
-          {this.state.formatedValue}
+          {value}
         </div>
       );
-    }
-    const style = {
-      textAlign: this.props.style.textAlign
-    };
-    if (this.props.inputType === "filter") {
-      style.padding = ".4em";
-      // style.border = 0;
-      // style.width = "98%";
-    }
-
-    let type = "text",
-      input,
-      checkboxLabel,
-      label;
-    let disabled = !this.props.editable || undefined;
-    if (this.props.select) {
-      let options = this.props.select;
-      if (typeof options === "function") {
-        options = options(this.props.row);
-      }
-      input = (
-        <select
-          className={
-            this.props.className || "zebulon-input zebulon-input-select"
-          }
-          onChange={this.handleChange}
-          value={this.state.formatedValue}
-          style={style}
-          autoFocus={true}
-
-          // onEnter={() => console.log("enter")}
-        >
-          {options.map((item, index) => (
-            <option key={index} value={typeof item === "object" ? 1 : item}>
-              {typeof item === "object" ? 1 : item}
-            </option>
-          ))}
-        </select>
-      );
     } else {
-      if (this.props.dataType === "boolean") {
-        type = "checkbox";
-        disabled = false;
-        style.width = "unset";
-        checkboxLabel = (
-          <label htmlFor={this.props.id || "input"}>{this.props.label}</label>
+      const innerStyle = {
+        textAlign: style.textAlign
+      };
+      if (inputType === "filter") {
+        innerStyle.padding = ".4em";
+        innerStyle.height = "inherit";
+      }
+      // label;
+      let disabled = !editable || undefined;
+      if (select) {
+        let options = this.state.options;
+
+        // if (typeof options === "function") {
+        //   options = options(row);
+        // }
+        if (typeof options === "object") {
+          // const indexDot = column.accessor.indexOf(".");
+          if (column.reference) {
+            value = column.primaryKeyAccessorFunction({ row });
+            options = Object.keys(options).map(key => ({
+              id: key,
+              caption: column.accessorFunction({
+                row: { [column.reference]: options[key] }
+              })
+            }));
+          } else {
+            options = Object.values(options);
+          }
+          // if (!column.mandatory) {
+          options = [{ id: undefined, label: "" }].concat(options);
+          // }
+        }
+        input = (
+          <select
+            id={id}
+            key={id}
+            className={className || "zebulon-input zebulon-input-select"}
+            onChange={this.handleChange}
+            value={value}
+            style={innerStyle}
+            autoFocus={true}
+          >
+            {options.map((item, index) => {
+              return (
+                <option
+                  key={index}
+                  value={typeof item === "object" ? item.id : item}
+                  style={typeof item === "object" ? item.style || {} : {}}
+                >
+                  {typeof item === "object" ? item.caption : item}
+                </option>
+              );
+            })}
+          </select>
+        );
+      } else if (dataType === "boolean") {
+        innerStyle.width = "unset";
+        innerStyle.margin = 0;
+        input = (
+          <input
+            type="checkbox"
+            id={id}
+            key={id}
+            className={className || "zebulon-input"}
+            style={innerStyle}
+            checked={this.state.value || false}
+            disabled={false}
+            onChange={this.handleChange}
+            onFocus={onClick}
+            tabIndex={tabIndex}
+          />
+        );
+      } else {
+        // let value = this.state.formatedValue;
+        if (isNullOrUndefined(value) || value === "") {
+          value = "";
+        }
+        input = (
+          <input
+            type="text"
+            id={id}
+            key={id}
+            className={"zebulon-table-input"}
+            autoFocus={hasFocus && inputType !== "filter"}
+            style={innerStyle}
+            // draggable={false}
+            value={value}
+            disabled={disabled}
+            onChange={this.handleChange}
+            // onBlur={this.handleBlur}
+            // tabIndex={0}
+            onFocus={this.handleFocus}
+            onBlur={this.handleBlur}
+            tabIndex={tabIndex}
+          />
         );
       }
       input = (
-        <input
-          type={type}
-          key={this.props.id}
-          className={this.props.className || "zebulon-input"}
-          autoFocus={this.props.hasFocus && this.props.inputType !== "filter"}
+        <div
+          id={id}
+          key={id}
+          className={className || "zebulon-input"}
           style={style}
-          value={this.state.formatedValue}
-          checked={this.state.value || false}
-          disabled={disabled}
-          onChange={this.handleChange}
-          onBlur={this.handleBlur}
-          ref={ref => (this.focused = ref)}
-          tabIndex={0}
-          onFocus={e => (this.props.onFocus || (() => {}))(e)}
-        />
+          onDrop={e => e.preventDefault()}
+          onDoubleClick={onDoubleClick}
+        >
+          {input}
+        </div>
       );
     }
-    input = (
-      <div
-        id="div-input"
-        key={this.props.id}
-        className={this.props.className || "zebulon-input"}
-        style={this.props.style}
-        onClick={this.props.onClick || (() => {})}
-        onDoubleClick={this.props.onDoubleClick || (() => {})}
-        // onFocus={() => console.log("focus")}
-      >
-        {input}
-        {checkboxLabel}
-      </div>
-    );
-    if (this.props.label && this.props.dataType !== "boolean") {
-      return (
+    if (inputType === "field") {
+      input = (
         <label
+          id={id}
+          key={id}
           style={{
             display: "flex",
             justifyContent: "space-between",
@@ -212,87 +349,11 @@ export class Input extends Component {
           }}
           // className={this.props.className}
         >
-          {this.props.label}
+          {column.caption}
           {input}
         </label>
       );
-    } else {
-      return input;
     }
-  }
-}
-
-export class InputInterval extends Component {
-  constructor(props) {
-    super(props);
-    const initialValues = props.initialValues || [null, null];
-    this.state = { from: initialValues[0], to: initialValues[1] };
-  }
-  // componentDidMount() {
-  //   if (this.props.hasFocus) {
-  //     document.getElementById("focused").focus();
-  //     console.log("int", document.activeElement);
-  //   }
-  // }
-  getFrom = () => {
-    return this.state.from;
-  };
-  getTo = () => {
-    return this.state.to;
-  };
-  handleChange = (type, value) => {
-    this.setState({ [type]: value });
-    if (this.props.onChange) {
-      this.props.onChange([
-        type === "from" ? value : this.getFrom(),
-        type === "to" ? value : this.getTo()
-      ]);
-    }
-  };
-  handleBlur = (type, value) => {
-    if (this.props.onChange) {
-      this.props.onChange([this.getFrom(), this.getTo()]);
-    }
-  };
-
-  render() {
-    const { dataType, format, style, hasFocus } = this.props;
-    return (
-      <div key={this.props.id} style={this.props.style}>
-        <div
-          style={{
-            textAlign: "center",
-            fontWeight: "bold",
-            paddingBottom: this.props.title ? 10 : 0
-          }}
-        >
-          {this.props.title}
-        </div>
-        <div>
-          <Input
-            hasFocus={hasFocus}
-            style={style}
-            value={this.getFrom()}
-            dataType={dataType}
-            format={format}
-            onChange={value => this.handleChange("from", value)}
-            onBlur={value => this.handleBlur("from", value)}
-            editable={true}
-          />
-        </div>
-        <div>
-          <Input
-            hasFocus={false}
-            style={style}
-            value={this.getTo()}
-            dataType={dataType}
-            format={format}
-            onChange={value => this.handleChange("to", value)}
-            onBlur={value => this.handleBlur("to", value)}
-            editable={true}
-          />
-        </div>
-      </div>
-    );
+    return input;
   }
 }

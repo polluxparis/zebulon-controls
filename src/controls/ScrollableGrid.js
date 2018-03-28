@@ -121,11 +121,12 @@ export class ScrollableGrid extends ScrollableArea {
   };
   selectRange = range => {
     if (this.props.selectRange) {
-      if (!this.props.selectRange(range)) {
-        return false;
-      }
+      this.props.selectRange(range, ok => {
+        if (ok) {
+          this.setState({ selectedRange: range });
+        }
+      });
     }
-    this.setState({ selectedRange: range });
   };
 
   // ------------------------------------------------

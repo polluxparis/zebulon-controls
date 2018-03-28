@@ -41,28 +41,28 @@ export class Layout extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.keyEvent !== nextProps.keyEvent) {
-      if (nextProps.keyEvent.which === 27 && this.contextualMenu) {
-        this.contextualMenu.close();
-      }
-      const zoom = utils.isZoom(nextProps.keyEvent);
-      if (zoom) {
-        const lay = this.getLayout(this.getIds(": " + this.state.activeLayout));
-        lay.zoom = (lay.zoom || 1) * (zoom === 1 ? 1.1 : 1 / 1.1);
-        this.setState({ layout: this.state.layout });
-        nextProps.keyEvent.preventDefault();
-        return;
-      }
-      if (
-        utils.isNavigationKey(nextProps.keyEvent) ||
-        nextProps.keyEvent.type === "copy" ||
-        nextProps.keyEvent.type === "paste"
-      ) {
-        this.setState({ keyEvent: nextProps.keyEvent });
-        return;
-      }
-      this.keyEvent = true;
-    }
+    // if (this.props.keyEvent !== nextProps.keyEvent) {
+    //   if (nextProps.keyEvent.which === 27 && this.contextualMenu) {
+    //     this.contextualMenu.close();
+    //   }
+    //   const zoom = utils.isZoom(nextProps.keyEvent);
+    //   if (zoom) {
+    //     const lay = this.getLayout(this.getIds(": " + this.state.activeLayout));
+    //     lay.zoom = (lay.zoom || 1) * (zoom === 1 ? 1.1 : 1 / 1.1);
+    //     this.setState({ layout: this.state.layout });
+    //     nextProps.keyEvent.preventDefault();
+    //     return;
+    //   }
+    //   if (
+    //     utils.isNavigationKey(nextProps.keyEvent) ||
+    //     nextProps.keyEvent.type === "copy" ||
+    //     nextProps.keyEvent.type === "paste"
+    //   ) {
+    //     this.setState({ keyEvent: nextProps.keyEvent });
+    //     return;
+    //   }
+    //   this.keyEvent = true;
+    // }
     if (
       this.props.sizes.height !== nextProps.sizes.height ||
       this.props.sizes.width != this.state.layout
@@ -73,6 +73,12 @@ export class Layout extends Component {
       this.setState({ layout });
     }
   }
+  handleKeyEvent = e => {
+    const layout = this.getLayout(this.getIds(": " + this.state.activeLayout));
+    if (layout && layout.handleKeyEvent) {
+      return layout.handleKeyEvent(e);
+    }
+  };
   shouldComponentUpdate(nextProps) {
     if (this.keyEvent) {
       this.keyEvent = false;
@@ -114,12 +120,7 @@ export class Layout extends Component {
   // --------------------------------------
   isVisible = (layoutId, index) =>
     (this.state.selectedTabs[layoutId] || 0) === index;
-  buildLayout = (
-    layout, //{ height, width, display, resizable, layouts, content, title },
-    parent,
-    index,
-    components
-  ) => {
+  buildLayout = (layout, parent, index, components) => {
     const {
       height,
       width,
@@ -156,7 +157,6 @@ export class Layout extends Component {
         <div
           id={"layout-resize-handle-V: " + layout.id}
           style={{
-            // height: height - (parent ? titleHeight : 0) - resizeHandleSize,
             height: height,
             width: resizeHandleSize,
             cursor: "col-resize"
@@ -658,8 +658,11 @@ export class Layout extends Component {
   };
   handleDragOver = e => {
     if (this.dragId) {
-      e.preventDefault();
-      if (this.dragId.startsWith("layout-resize-handle")) {
+      if (
+        this.dragId.startsWith("layout-resize-handle") &&
+        this.state.layout.resizable
+      ) {
+        e.preventDefault();
         // e.stopPropagation();
         const dragPreviewStyle = { ...this.dragPreviewStyle };
         if (this.dragDirection === "vertical") {
@@ -669,6 +672,7 @@ export class Layout extends Component {
         }
       } else if (
         this.dragId.startsWith("layout-title") &&
+        this.state.layout.updatable &&
         (!e.target.id.startsWith("layout-title") ||
           this.getLayout(this.getIds(e.target.id)).parent.display === "tabs")
       ) {
@@ -838,8 +842,8 @@ export class Layout extends Component {
         style={{ position: "relative" }}
         onDragStart={this.handleDragStart}
         onDragOver={this.handleDragOver}
-        onDragExit={e => console.log("exit", e)}
-        onDragLeave={e => console.log("leave", e)}
+        // onDragExit={e => console.log("exit", e)}
+        // onDragLeave={e => console.log("leave", e)}
         onDrop={this.handleDrop}
         onClick={e => {
           if (

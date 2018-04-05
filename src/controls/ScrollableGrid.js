@@ -57,6 +57,7 @@ export class ScrollableGrid extends ScrollableArea {
           null,
           null,
           null,
+          null,
           1 - Math.min(ratios.horizontal.display, 1)
         );
       }
@@ -67,6 +68,7 @@ export class ScrollableGrid extends ScrollableArea {
       ) {
         this.onScroll(
           AxisType.ROWS,
+          null,
           null,
           null,
           null,
@@ -132,18 +134,43 @@ export class ScrollableGrid extends ScrollableArea {
   // ------------------------------------------------
   // to be overwritten
   // ------------------------------------------------
-  scrollOnKey = (cell, axis, direction, extension) => {
+  scrollOnKey = (cell, axis, direction, directionColumn, extension) => {
     const scroll = this.state.scroll;
     // console.log("scrollonkey", this.props.scroll, this.stopIndex);
-    if (
-      this.scrollbars[axis === AxisType.ROWS ? "vertical" : "horizontal"]
-        .width &&
+    const axisRow =
+      (axis === AxisType.ROWS || axis === null) &&
+      this.scrollbars["vertical"].width &&
       ((direction === 1 &&
-        cell[toAxis(axis)] >= this.stopIndex[toAxis(axis)]) ||
+        cell[toAxis(AxisType.ROWS)] >= this.stopIndex[toAxis(AxisType.ROWS)]) ||
         (direction === -1 &&
-          cell[toAxis(axis)] <= scroll[toAxis(axis)].startIndex))
-    ) {
-      this.onScroll(axis, -direction, cell, extension);
+          cell[toAxis(AxisType.ROWS)] <=
+            scroll[toAxis(AxisType.ROWS)].startIndex));
+    const directionC = axis === null ? directionColumn : direction;
+    const axisColumn =
+      (axis === AxisType.COLUMNS || axis === null) &&
+      this.scrollbars["horizontal"].width &&
+      ((directionC === 1 &&
+        cell[toAxis(AxisType.COLUMNS)] >=
+          this.stopIndex[toAxis(AxisType.COLUMNS)]) ||
+        (directionC === -1 &&
+          cell[toAxis(AxisType.COLUMNS)] <=
+            scroll[toAxis(AxisType.COLUMNS)].startIndex));
+    let axis_;
+    if (axis === null && axisRow && axisColumn) {
+      axis_ = null;
+    } else if ((axis === AxisType.ROWS || axis === null) && axisRow) {
+      axis_ = AxisType.ROWS;
+    } else if ((axis === AxisType.COLUMNS || axis === null) && axisColumn) {
+      axis_ = AxisType.COLUMNS;
+    }
+    if (axis_ !== undefined) {
+      this.onScroll(
+        axis_,
+        -(axis === null && axis_ === AxisType.COLUMNS ? directionC : direction),
+        -directionColumn,
+        cell,
+        extension
+      );
     }
     // else {
     this.selectCell(cell, extension);
@@ -310,8 +337,7 @@ export class ScrollableGrid extends ScrollableArea {
     }
   };
 
-  onScroll = (axis, dir, cell, extension, positionRatio) => {
-    const ix = cell ? cell[toAxis(axis)] : null;
+  onScroll = (axis, dir, dirC, cell, extension, positionRatio) => {
     const scroll = { ...this.state.scroll };
     // console.log("scrollable", scroll, cell);
     const { height, width, rowHeight, data, dataLength } = this.props;
@@ -321,14 +347,16 @@ export class ScrollableGrid extends ScrollableArea {
       rows: { ...scroll.rows },
       columns: { ...scroll.columns }
     };
+    let ix = cell ? cell[toAxis(AxisType.COLUMNS)] : null;
     let startIndex = ix,
       index = ix,
-      direction = dir,
+      direction = axis === null ? dirC : dir,
       shift = 0,
-      position;
+      position,
+      changed = false;
 
     // scroll event =>scroll by position
-    if (axis === AxisType.COLUMNS) {
+    if (axis === AxisType.COLUMNS || axis === null) {
       if (ix === null && positionRatio !== null) {
         // const lastColumn = properties[properties.length - 1];
         position = this.rowWidth * positionRatio;
@@ -368,6 +396,7 @@ export class ScrollableGrid extends ScrollableArea {
         shift = Math.min(0, column.position - position - this.lockedWidth);
       }
       // console.log("scroll", direction, shift, position);
+      changed = direction || changed;
       newScroll.columns = {
         index,
         direction,
@@ -377,7 +406,13 @@ export class ScrollableGrid extends ScrollableArea {
       };
       // console.log(column, newScroll);
       // scroll by row step
-    } else if (axis === AxisType.ROWS) {
+    }
+    if (axis === AxisType.ROWS || axis === null) {
+      ix = cell ? cell[toAxis(AxisType.ROWS)] : null;
+      startIndex = ix;
+      index = ix;
+      direction = dir;
+      shift = 0;
       const visibleHeight = height - this.scrollbars.horizontal.width2;
       const nRows = Math.ceil(visibleHeight / rowHeight);
       // scroll event
@@ -405,6 +440,7 @@ export class ScrollableGrid extends ScrollableArea {
       } else {
         startIndex = direction === 1 ? index : Math.max(0, index - nRows + 1);
       }
+      changed = direction || changed;
       newScroll.rows = {
         index,
         direction,
@@ -412,16 +448,13 @@ export class ScrollableGrid extends ScrollableArea {
         shift: direction === -1 ? visibleHeight - nRows * rowHeight : 0
       };
     }
-    if (direction) {
+    if (changed) {
       this.setState({ scroll: newScroll });
-      // console.log("scrollable1", scroll, newScroll, cell);
       if (this.props.onScroll) {
         if (this.props.onScroll(newScroll, cell, extension) === false) {
           return false;
         }
       }
-      // console.log("scrollable2", this.props.scroll, newScroll, cell);
-
       return true;
     }
   };
@@ -431,6 +464,7 @@ export class ScrollableGrid extends ScrollableArea {
       this.onScroll(
         e.direction === "horizontal" ? AxisType.COLUMNS : AxisType.ROWS,
         e.sense,
+        null,
         null,
         null,
         e.positionRatio

@@ -9,5 +9,5 @@ export * from "./ScrollableArea";
 export * from "./ScrollableGrid";
 export * from "./ConfirmationModal";
 export * from "./Layout";
-export { constants, utils };
+export { constants, utils, icons };
 // export utils;

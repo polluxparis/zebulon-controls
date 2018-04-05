@@ -101,7 +101,7 @@ export class Input extends Component {
           : value;
       return !isNaN(Number(v));
     } else if (dataType === "date") {
-      v = value.match(/[0123456789.:/ ]+/g);
+      v = value.match(/[0123456789.:/ ]+/g) || [];
       return value === "" || (v.length === 1 && v[0] === value);
     }
     return true;
@@ -267,7 +267,7 @@ export class Input extends Component {
             onChange={this.handleChange}
             value={value}
             style={innerStyle}
-            autoFocus={true}
+            autoFocus={hasFocus}
           >
             {options.map((item, index) => {
               return (

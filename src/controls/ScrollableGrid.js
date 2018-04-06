@@ -2,7 +2,7 @@ import React, { cloneElement } from "react";
 
 import { ScrollableArea } from "./ScrollableArea";
 import { AxisType, toAxis, ScrollbarSize } from "./constants";
-import { isEmpty, isNullOrUndefined } from "./utils/generic";
+import { isEmpty, isNullOrUndefined, keyMap } from "./utils/generic";
 export class ScrollableGrid extends ScrollableArea {
   constructor(props) {
     super(props);
@@ -249,53 +249,71 @@ export class ScrollableGrid extends ScrollableArea {
     cell[toAxis(axis)] = this.lastIndex(axis, direction);
     return cell;
   };
+  // const keyMap = {
+  //   9: "tab",
+  //   13: "enter",
+  //   27: "escape",
+  //   33: "pageUp",
+  //   34: "pageDown",
+  //   35: "end",
+  //   36: "home",
+  //   37: "leftArrow",
+  //   38: "upArrow",
+  //   39: "rightArrow",
+  //   40: "downArrow",
+  //   107: "+",
+  //   109: "-",
+  //   187: "=",
+  //   65: "a",
+  //   112: "f1"
+  //   48:"0",
+  //   96:"numpad0"
+  // };
   navigationKeyHandler = e => {
-    if (!((e.which > 32 && e.which < 41) || e.which === 9)) {
+    const keyCode = e.which || e.keyCode;
+    const key = keyMap[keyCode];
+    if (!((keyCode > 32 && keyCode < 41) || keyCode === 9)) {
       return false;
     }
     let direction, cell, axis;
-    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    if (key === "ArrowDown" || key === "ArrowUp") {
       if (
         document.activeElement.tagName === "SELECT" ||
         document.activeElement.tagName === "TEXTAREA"
       ) {
         return false;
       }
-      direction = e.key === "ArrowDown" ? 1 : -1;
+      direction = key === "ArrowDown" ? 1 : -1;
       axis = AxisType.ROWS;
       cell = this.nextCell(axis, direction, 1);
-    } else if (
-      e.key === "ArrowRight" ||
-      e.key === "ArrowLeft" ||
-      e.key === "Tab"
-    ) {
+    } else if (key === "ArrowRight" || key === "ArrowLeft" || key === "Tab") {
       if (
         (document.activeElement.tagName === "INPUT" ||
           document.activeElement.tagName === "TEXTAREA") &&
-        e.key !== "Tab" &&
+        key !== "Tab" &&
         !e.altKey
       ) {
         return false;
       }
       direction =
-        e.key === "ArrowRight" || (e.key === "Tab" && !e.shiftKey) ? 1 : -1;
+        key === "ArrowRight" || (key === "Tab" && !e.shiftKey) ? 1 : -1;
       axis = AxisType.COLUMNS;
       cell = this.nextCell(axis, direction, 1);
-    } else if (e.key === "PageUp" || e.key === "PageDown") {
-      direction = e.key === "PageDown" ? 1 : -1;
+    } else if (key === "PageUp" || key === "PageDown") {
+      direction = key === "PageDown" ? 1 : -1;
       axis = e.altKey ? AxisType.COLUMNS : AxisType.ROWS;
       cell = this.nextPageCell(axis, direction);
-    } else if (e.key === "Home" || e.key === "End") {
-      direction = e.key === "End" ? 1 : -1;
+    } else if (key === "Home" || key === "End") {
+      direction = key === "End" ? 1 : -1;
       axis = e.altKey ? AxisType.COLUMNS : AxisType.ROWS;
       cell = this.endCell(axis, direction);
     }
     // selection
     e.preventDefault();
-    // if (this.selectCell(cell, e.shiftKey && e.key !== "Tab") === false) {
+    // if (this.selectCell(cell, e.shiftKey && key !== "Tab") === false) {
     //   return false;
     // }
-    return { cell, axis, direction, extension: e.shiftKey && e.key !== "Tab" };
+    return { cell, axis, direction, extension: e.shiftKey && key !== "Tab" };
   };
   handleNavigationKeys = e => {
     if (e.which === 65 && (e.metaKey || e.ctrlKey)) {

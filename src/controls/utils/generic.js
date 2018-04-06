@@ -262,14 +262,44 @@ export const stringToDate = (s, fmt) => {
 // -------------------------------------------
 //  key management
 //  ------------------------------------------
-export const isNavigationKey = e =>
-  (e.which > 32 && e.which < 41) || // arrows...
-  e.which === 9 || // tab
-  e.which === 27 || // escape
-  (e.which === 65 && (e.metaKey || e.ctrlKey));
-export const isZoom = e =>
-  (e.metaKey || e.ctrlKey) *
-  (e.key === "+" || e.key === "=" || -(e.key === "-" || e.key === "_"));
+
+export const keyMap = {
+  9: "Tab",
+  13: "Enter",
+  27: "Escape",
+  33: "PageUp",
+  34: "PageDown",
+  35: "End",
+  36: "Home",
+  37: "ArrowLeft",
+  38: "ArrowUp",
+  39: "ArrowRight",
+  40: "ArrowDown",
+  107: "+",
+  109: "-",
+  187: "=",
+  65: "a",
+  112: "f1",
+  48: "0",
+  96: "numpad0"
+};
+
+export const isNavigationKey = e => {
+  const keyCode = e.which || e.keyCode;
+  return (
+    (keyCode > 32 && keyCode < 41) || // arrows...
+    keyCode === 9 || // tab
+    keyCode === 27 || // escape
+    (keyCode === 65 && (e.metaKey || e.ctrlKey)) // ctrl a
+  );
+};
+export const isZoom = e => {
+  const keyCode = e.which || e.keyCode;
+  return (
+    (e.metaKey || e.ctrlKey) *
+    (keyCode === 107 || keyCode === 187 || -(keyCode === 109))
+  );
+};
 //------------------------------------------------
 // Copy, ...paste,export
 // -----------------------------------------------

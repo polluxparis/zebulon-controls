@@ -129,7 +129,11 @@ const MENU_EVENT = "MENU_EVENT";
 export class ContextualMenu extends Component {
 	constructor(props) {
 		super(props);
-		this.state = { menu: null, componentId: props.componentId };
+		this.state = {
+			menu: null,
+			componentId: props.componentId,
+			position: { x: 0, y: 0 }
+		};
 		this.openedLevel = {};
 		this.hoveredItem = {};
 	}
@@ -147,8 +151,8 @@ export class ContextualMenu extends Component {
 		const { position, menuId, data, componentId } = e.detail;
 		if (componentId === this.state.componentId) {
 			const rect = this.div.getBoundingClientRect();
-			position.y -= rect.y;
-			position.x -= rect.x;
+			position.y -= rect.top;
+			position.x -= rect.left;
 			const menu = this.props.getMenu(menuId, data);
 			if (menu) {
 				menu.visible = true;
@@ -267,6 +271,7 @@ export class ContextualMenuClient extends Component {
 			<div
 				onContextMenu={this.onContextMenu}
 				ref={ref => (this.ref = ref)}
+				style={{ width: "inherit" }}
 			>
 				{this.props.children}
 			</div>

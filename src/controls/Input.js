@@ -309,7 +309,7 @@ export class Input extends Component {
             type="text"
             id={id}
             key={id}
-            className={"zebulon-table-input"}
+            className={className || "zebulon-table-input"}
             autoFocus={hasFocus && inputType !== "filter"}
             style={innerStyle}
             // draggable={false}
@@ -328,8 +328,8 @@ export class Input extends Component {
         <div
           id={id}
           key={id}
-          className={className || "zebulon-input"}
-          style={style}
+          // className={className || "zebulon-input"}
+          style={{ ...style, border: "unset" }}
           onDrop={e => e.preventDefault()}
           onDoubleClick={onDoubleClick}
         >

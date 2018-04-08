@@ -742,8 +742,8 @@ export class Layout extends Component {
           } else {
             // const element = document.getElementById(body);
             rect = body.getBoundingClientRect();
-            const top = e.clientY - rect.y < rect.height / 2;
-            const left = e.clientX - rect.x < rect.width / 2;
+            const top = e.clientY - rect.top < rect.height / 2;
+            const left = e.clientX - rect.left < rect.width / 2;
 
             if (
               dropLayout.content !== null ||

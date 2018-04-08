@@ -112,22 +112,56 @@ export class ScrollableGrid extends ScrollableArea {
     const cell = this.state.selectedRange.end;
     return !isEmpty(cell) ? { ...cell } : { columns: 0, rows: 0 };
   };
-  selectCell = (cell, extension) => {
+  selectCell = (cell, extension, fromKey) => {
     const range = extension
       ? { ...this.selectedRange(), end: cell }
       : { start: cell, end: cell };
     if (range.start.rows === undefined) {
       range.start = range.end;
     }
-    return this.selectRange(range);
+    // if (
+    //   !fromKey &&
+    //   ((cell.rows === this.state.scroll.rows.startIndex &&
+    //     this.state.scroll.rows.shift) ||
+    //     (cell.rows === this.stopIndex[toAxis(AxisType.ROWS)] &&
+    //       !this.state.scroll.rows.shift &&
+    //       this.state.scroll.rows.direction === 1))
+    // ) {
+    //   cell.rows = this.nextIndex(
+    //     AxisType.ROWS,
+    //     this.state.scroll.rows.startIndex ? -1 : 1,
+    //     cell.rows,
+    //     1
+    //   );
+    //   this.scrollOnKey(
+    //     cell,
+    //     AxisType.ROWS,
+    //     cell.rows <= this.state.scroll.rows.startIndex ? -1 : 1,
+    //     extension
+    //   );
+    // }
+    return this.selectRange(
+      range,
+      !fromKey &&
+        this.props.locked &&
+        (cell.rows === this.state.scroll.rows.startIndex ||
+          cell.rows === this.stopIndex.rows)
+    );
   };
-  selectRange = range => {
+  selectRange = (range, scrollOnClick) => {
     if (this.props.selectRange) {
-      this.props.selectRange(range, ok => {
-        if (ok) {
-          this.setState({ selectedRange: range });
-        }
-      });
+      this.props.selectRange(
+        range,
+        ok => {
+          if (ok) {
+            this.setState({ selectedRange: range });
+          }
+        },
+        undefined,
+        undefined,
+        undefined,
+        scrollOnClick
+      );
     }
   };
 
@@ -172,9 +206,7 @@ export class ScrollableGrid extends ScrollableArea {
         extension
       );
     }
-    // else {
-    this.selectCell(cell, extension);
-    // }
+    this.selectCell(cell, extension, true);
   };
   nextIndex = (axis, direction, index, offset) => {
     const { data, dataLength } = this.props;
@@ -350,6 +382,7 @@ export class ScrollableGrid extends ScrollableArea {
         const { cell, axis, direction, extension } = navigation;
         // console.log("scrollonkey-1", this.props.scroll, cell);
         this.scrollOnKey(cell, axis, direction, extension);
+        // this.selectCell(cell, extension, true);
         return { ...cell, axis, direction };
       }
     }
@@ -491,6 +524,7 @@ export class ScrollableGrid extends ScrollableArea {
   };
   onWheel = e => {
     e.preventDefault();
+    e.stopPropagation();
     const sense = e.altKey || e.deltaX !== 0 ? "columns" : "rows";
     const delta = e.deltaX === 0 ? e.deltaY : e.deltaX;
     const { height, rowHeight, width, data, dataLength, onScroll } = this.props;
@@ -525,7 +559,6 @@ export class ScrollableGrid extends ScrollableArea {
       }
     } else {
       direction = 1;
-      // const lastColumn = properties[properties.length - 1];
       position = Math.min(Math.max(position + delta, 0), this.rowWidth - width);
       const column = properties.find(column => {
         const pos = column.position - this.lockedWidth;
@@ -540,6 +573,7 @@ export class ScrollableGrid extends ScrollableArea {
       startIndex = index;
     }
     scroll[sense] = { index, direction, startIndex, shift, position };
+    // console.log("wheel", scroll);
     this.setState({ scroll });
     if (onScroll) {
       onScroll(scroll);
@@ -555,17 +589,6 @@ export class ScrollableGrid extends ScrollableArea {
       if (rows[0]) {
         const columns = rows[0].props.children;
         if (Array.isArray(columns) && columns.length) {
-          // columnIndex = this.state.scroll.columns.startIndex;
-          // if (
-          //   this.props.meta &&
-          //   !isNullOrUndefined(this.props.meta.lockedIndex)
-          // ) {
-          //   columnIndex = Math.max(
-          //     columnIndex,
-          //     this.props.meta.lockedIndex + 1
-          //   );
-          // }
-          // columnIndex += columns.length - 1;
           columnIndex = columns[columns.length - 1].props.column.index_;
         }
       }

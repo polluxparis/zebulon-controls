@@ -222,8 +222,8 @@ export class ScrollableArea extends Component {
           style={{
             width,
             ...(this.props.style || {}),
-            display: "flex",
-            overflow: "hidden"
+            display: "flex"
+            // overflow: "hidden"
             // width
           }}
         >

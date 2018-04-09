@@ -108,7 +108,14 @@ export class Input extends Component {
   };
 
   handleChange = e => {
-    const { row, editable, inputType, onChange, filterTo } = this.props;
+    const {
+      row,
+      editable,
+      inputType,
+      onChange,
+      filterTo,
+      onClick
+    } = this.props;
     const column = this.column;
     const { dataType, format } = column || { dataType: this.props.dataType };
     if (editable) {
@@ -116,14 +123,17 @@ export class Input extends Component {
         validatedValue;
       if (!this.validateInput(value)) return;
       // selection of an object
-      if (column.reference && column.select) {
-        validatedValue = column.selectItems[e.target.value];
+      if (column.reference && column.selectItems) {
+        validatedValue = column.selectItems[e.target.value] || {};
       } else if (dataType === "boolean") {
         if (inputType === "filter" && this.state.value === false)
           validatedValue = null;
         else {
           validatedValue = !this.state.value;
           value = validatedValue;
+          if (inputType !== "filter" && !this.props.focused) {
+            onClick(e);
+          }
         }
       } else if (dataType === "date") {
         validatedValue = stringToDate(value, format);
@@ -145,7 +155,7 @@ export class Input extends Component {
         if (
           column.setForeignKeyAccessorFunction &&
           column.reference &&
-          column.select
+          column.selectItems
         ) {
           // const v = column.primaryKeyAccessorFunction({
           //   row: { [column.reference]: validatedValue }
@@ -228,9 +238,10 @@ export class Input extends Component {
       );
     } else {
       const innerStyle = {
-        textAlign: style.textAlign
+        textAlign: style.textAlign,
+        width: "100%"
       };
-      if (inputType === "filter") {
+      if (inputType === "filter" && dataType !== "boolean") {
         innerStyle.padding = ".4em";
         innerStyle.height = "inherit";
       }
@@ -283,14 +294,15 @@ export class Input extends Component {
           </select>
         );
       } else if (dataType === "boolean") {
-        innerStyle.width = "unset";
-        innerStyle.margin = 0;
+        innerStyle.width = "100%";
+        innerStyle.margin = "unset";
+        innerStyle.padding = "unset";
         input = (
           <input
             type="checkbox"
             id={id}
             key={id}
-            className={className || "zebulon-input"}
+            // className={className || "zebulon-input"}
             style={innerStyle}
             checked={this.state.value || false}
             disabled={false}
@@ -324,18 +336,34 @@ export class Input extends Component {
           />
         );
       }
-      input = (
-        <div
-          id={id}
-          key={id}
-          // className={className || "zebulon-input"}
-          style={{ ...style, border: "unset" }}
-          onDrop={e => e.preventDefault()}
-          onDoubleClick={onDoubleClick}
-        >
-          {input}
-        </div>
-      );
+      if (dataType === "boolean") {
+        input = (
+          <div
+            id={id}
+            key={id}
+            className={className}
+            style={{ ...style }}
+            onDrop={e => e.preventDefault()}
+            onDoubleClick={onDoubleClick}
+            // onClick={onClick}
+          >
+            {input}
+          </div>
+        );
+      } else {
+        input = (
+          <div
+            id={id}
+            key={id}
+            style={{ ...style }}
+            onDrop={e => e.preventDefault()}
+            onDoubleClick={onDoubleClick}
+            // onClick={onClick}
+          >
+            {input}
+          </div>
+        );
+      }
     }
     if (inputType === "field") {
       input = (

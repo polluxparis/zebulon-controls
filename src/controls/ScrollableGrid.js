@@ -1,5 +1,4 @@
 import React, { cloneElement } from "react";
-
 import { ScrollableArea } from "./ScrollableArea";
 import { AxisType, toAxis, ScrollbarSize } from "./constants";
 import { isEmpty, isNullOrUndefined, keyMap } from "./utils/generic";
@@ -17,7 +16,10 @@ export class ScrollableGrid extends ScrollableArea {
           position: 0
         }
       },
-      selectedRange: props.selectedRange || { start: {}, end: {} },
+      selectedRange: props.selectedRange || {
+        start: { rows: 0, columns: 0 },
+        end: { rows: 0, columns: 0 }
+      },
       meta: props.meta
     };
     if (!props.meta) {
@@ -29,18 +31,35 @@ export class ScrollableGrid extends ScrollableArea {
     this.getRowWidth(props.meta, props.locked);
   }
   getRowWidth = (meta, locked) => {
-    if (locked) {
-      this.rowWidth = meta.lockedWidth;
-      this.lockedWidth = 0;
-    } else if (meta) {
-      this.lockedWidth = meta.lockedWidth || 0;
-      const lastColumn = meta.properties[meta.properties.length - 1];
-      this.rowWidth =
-        lastColumn.position + lastColumn.computedWidth - this.lockedWidth;
+    this.rowWidth = this.props.width;
+    this.lockedWidth = 0;
+    if (meta) {
+      if (locked) {
+        this.rowWidth = meta.lockedWidth;
+        this.lockedWidth = 0;
+      } else {
+        this.lockedWidth = meta.lockedWidth || 0;
+        const lastColumn = meta.properties[meta.properties.length - 1];
+        this.rowWidth =
+          lastColumn.position + lastColumn.computedWidth - this.lockedWidth;
+      }
     }
   };
   componentWillReceiveProps(nextProps) {
+    if (this.props.meta !== nextProps.meta) {
+      this.setState({ meta: nextProps.meta });
+      this.getRowWidth(nextProps.meta, nextProps.locked);
+    }
     if (
+      this.props.scroll !== nextProps.scroll &&
+      (nextProps.scroll.rows.index !== this.props.scroll.rows.index ||
+        nextProps.scroll.rows.direction !== this.props.scroll.rows.direction ||
+        nextProps.scroll.columns.index !== this.props.scroll.columns.index ||
+        nextProps.scroll.columns.direction !==
+          this.props.scroll.columns.direction)
+    ) {
+      this.setState({ scroll: nextProps.scroll });
+    } else if (
       nextProps.height !== this.props.height ||
       nextProps.width !== this.props.width
     ) {
@@ -76,22 +95,8 @@ export class ScrollableGrid extends ScrollableArea {
         );
       }
     }
-    if (
-      this.props.scroll !== nextProps.scroll &&
-      (nextProps.scroll.rows.index !== this.props.scroll.rows.index ||
-        nextProps.scroll.rows.direction !== this.props.scroll.rows.direction ||
-        nextProps.scroll.columns.index !== this.props.scroll.columns.index ||
-        nextProps.scroll.columns.direction !==
-          this.props.scroll.columns.direction)
-    ) {
-      this.setState({ scroll: nextProps.scroll });
-    }
     if (this.props.selectedRange !== nextProps.selectedRange) {
       this.setState({ selectedRange: nextProps.selectedRange });
-    }
-    if (this.props.meta !== nextProps.meta) {
-      this.setState({ meta: nextProps.meta });
-      this.getRowWidth(nextProps.meta, nextProps.locked);
     }
   }
   shouldComponentUpdate(nextProps, nextState) {
@@ -103,7 +108,14 @@ export class ScrollableGrid extends ScrollableArea {
     }
     return true;
   }
-  componentWillMount() {}
+  componentDidMount() {
+    if (!this.state.selectedRange) {
+      this.selectedRange({
+        start: { rows: 0, columns: 0 },
+        end: { rows: 0, columns: 0 }
+      });
+    }
+  }
   // ------------------------------------------------
   // selected range
   // ------------------------------------------------
@@ -119,34 +131,12 @@ export class ScrollableGrid extends ScrollableArea {
     if (range.start.rows === undefined) {
       range.start = range.end;
     }
-    // if (
-    //   !fromKey &&
-    //   ((cell.rows === this.state.scroll.rows.startIndex &&
-    //     this.state.scroll.rows.shift) ||
-    //     (cell.rows === this.stopIndex[toAxis(AxisType.ROWS)] &&
-    //       !this.state.scroll.rows.shift &&
-    //       this.state.scroll.rows.direction === 1))
-    // ) {
-    //   cell.rows = this.nextIndex(
-    //     AxisType.ROWS,
-    //     this.state.scroll.rows.startIndex ? -1 : 1,
-    //     cell.rows,
-    //     1
-    //   );
-    //   this.scrollOnKey(
-    //     cell,
-    //     AxisType.ROWS,
-    //     cell.rows <= this.state.scroll.rows.startIndex ? -1 : 1,
-    //     extension
-    //   );
-    // }
-    return this.selectRange(
-      range,
+    const scrollOnClick =
       !fromKey &&
-        this.props.locked &&
-        (cell.rows === this.state.scroll.rows.startIndex ||
-          cell.rows === this.stopIndex.rows)
-    );
+      this.props.locked &&
+      (cell.rows === this.state.scroll.rows.startIndex ||
+        cell.rows === this.stopIndex.rows);
+    return this.selectRange(range, scrollOnClick);
   };
   selectRange = (range, scrollOnClick) => {
     if (this.props.selectRange) {
@@ -162,6 +152,8 @@ export class ScrollableGrid extends ScrollableArea {
         undefined,
         scrollOnClick
       );
+    } else {
+      this.setState({ selectedRange: range });
     }
   };
 
@@ -307,26 +299,24 @@ export class ScrollableGrid extends ScrollableArea {
     if (!((keyCode > 32 && keyCode < 41) || keyCode === 9)) {
       return false;
     }
+    const element = document.activeElement;
+    const tagName = element.tagName;
+    // keep default behaviour for editable inputs except when alt key is pressed
+    if (
+      key !== "Tab" &&
+      !e.altKey &&
+      (tagName === "TEXTAREA" ||
+        (tagName === "SELECT" && ["ArrowDown", "ArrowUp"].includes(key)) ||
+        (tagName === "INPUT" && ["ArrowLeft", "ArrowRight"].includes(key)))
+    ) {
+      return false;
+    }
     let direction, cell, axis;
     if (key === "ArrowDown" || key === "ArrowUp") {
-      if (
-        document.activeElement.tagName === "SELECT" ||
-        document.activeElement.tagName === "TEXTAREA"
-      ) {
-        return false;
-      }
       direction = key === "ArrowDown" ? 1 : -1;
       axis = AxisType.ROWS;
       cell = this.nextCell(axis, direction, 1);
     } else if (key === "ArrowRight" || key === "ArrowLeft" || key === "Tab") {
-      if (
-        (document.activeElement.tagName === "INPUT" ||
-          document.activeElement.tagName === "TEXTAREA") &&
-        key !== "Tab" &&
-        !e.altKey
-      ) {
-        return false;
-      }
       direction =
         key === "ArrowRight" || (key === "Tab" && !e.shiftKey) ? 1 : -1;
       axis = AxisType.COLUMNS;
@@ -342,9 +332,6 @@ export class ScrollableGrid extends ScrollableArea {
     }
     // selection
     e.preventDefault();
-    // if (this.selectCell(cell, e.shiftKey && key !== "Tab") === false) {
-    //   return false;
-    // }
     return { cell, axis, direction, extension: e.shiftKey && key !== "Tab" };
   };
   handleNavigationKeys = e => {
@@ -366,7 +353,6 @@ export class ScrollableGrid extends ScrollableArea {
         return false;
       }
     } else if (!isNullOrUndefined(this.selectedRange().end.rows)) {
-      // console.log("scrollonkey-2", this.props.scroll);
       let navigationKeyHandler = this.navigationKeyHandler;
       if (this.props.navigationKeyHandler) {
         navigationKeyHandler = e =>
@@ -380,9 +366,7 @@ export class ScrollableGrid extends ScrollableArea {
       const navigation = navigationKeyHandler(e);
       if (navigation) {
         const { cell, axis, direction, extension } = navigation;
-        // console.log("scrollonkey-1", this.props.scroll, cell);
-        this.scrollOnKey(cell, axis, direction, extension);
-        // this.selectCell(cell, extension, true);
+        this.scrollOnKey(cell, axis, direction, undefined, extension);
         return { ...cell, axis, direction };
       }
     }
@@ -589,7 +573,9 @@ export class ScrollableGrid extends ScrollableArea {
       if (rows[0]) {
         const columns = rows[0].props.children;
         if (Array.isArray(columns) && columns.length) {
-          columnIndex = columns[columns.length - 1].props.column.index_;
+          columnIndex = (columns[columns.length - 1].props.column || {
+            index_: columns.length - 1
+          }).index_;
         }
       }
     }
@@ -600,55 +586,17 @@ export class ScrollableGrid extends ScrollableArea {
   // -----------------------------------------------
   // default-> list of items
   // -------------------------------------------------
-  // getRatios = props => {
-  //   const { height, width, rowHeight, rowWidth, data } = props;
-  //   const scroll = this.state.scroll;
-  //   // const meta = props.meta.properties;
-  //   // const lastColumn = meta[meta.length - 1];
-  //   // const columnsWidth = lastColumn.position + lastColumn.computedWidth;
-  //   const horizontalDisplay =
-  //     (width - (data.length * rowHeight > height ? ScrollbarSize : 0)) /
-  //     rowWidth;
-  //   const verticalDisplay =
-  //     (height - (rowWidth > width ? ScrollbarSize : 0)) /
-  //     (data.length * rowHeight);
-  //   // const horizontalDisplay = width / rowWidth;
-  //   // const verticalDisplay = height / (data.length * rowHeight);
-  //   return {
-  //     vertical: {
-  //       display: verticalDisplay,
-  //       position: Math.min(
-  //         scroll.rows.startIndex / data.length,
-  //         1 - verticalDisplay
-  //       )
-  //     },
-  //     horizontal: {
-  //       display: horizontalDisplay,
-  //       position: Math.min(
-  //         scroll.columns.position / rowWidth,
-  //         1 - horizontalDisplay
-  //       )
-  //     }
-  //   };
-  // };
   getRatios = props => {
-    const {
-      height,
-      width,
-      rowHeight,
-      scroll,
-      data,
-      dataLength,
-      meta,
-      locked
-    } = props;
+    //  a voir pagination manager: data->rows?
+    const { height, width, rowHeight, data, meta, locked, dataLength } = props;
+    const scroll = this.state.scroll;
     if (data.length === 0) {
       return false;
     }
     this.getRowWidth(meta, locked);
     const horizontalDisplay =
       (width -
-        ((dataLength || data.length || 1) * rowHeight > height
+        ((data.length || 1) * rowHeight > height
           ? ScrollbarSize * !props.noVerticalScrollbar
           : 0)) /
       this.rowWidth;
@@ -659,7 +607,7 @@ export class ScrollableGrid extends ScrollableArea {
       vertical: {
         display: verticalDisplay,
         position: Math.min(
-          scroll.rows.startIndex / (dataLength || data.length || 1),
+          scroll.rows.startIndex / (data.length || 1),
           1 - verticalDisplay
         )
       },
@@ -688,12 +636,12 @@ export class ScrollableGrid extends ScrollableArea {
         e.preventDefault();
         this.selectCell({ rows: ix, columns: 0 }, e.shiftKey);
       };
-      const onMouseOver = e => {
-        e.preventDefault();
-        if (e.buttons === 1) {
-          this.selectCell({ rows: ix, columns: 0 }, true);
-        }
-      };
+      // const onMouseOver = e => {
+      //   e.preventDefault();
+      //   if ((e.buttons & 1) === 1) {
+      //     this.selectCell({ rows: ix, columns: 0 }, true);
+      //   }
+      // };
       const className =
         "zebulon-table-cell" + (selected ? " zebulon-table-cell-selected" : "");
       items.push(
@@ -701,8 +649,8 @@ export class ScrollableGrid extends ScrollableArea {
           className,
           index: ix,
           selected,
-          onClick,
-          onMouseOver
+          onClick
+          // onMouseOver
         })
       );
       index++;
@@ -718,11 +666,6 @@ export class ScrollableGrid extends ScrollableArea {
           height: "inherit"
         }}
         onWheel={this.onWheel}
-        // assuming that id = row index
-        // onClick={e => {
-        // this.selectCell({ rows: e.target.id, columns: 0 });
-        // console.log("onclick", e.target.id);
-        // }}
       >
         {items}
       </div>

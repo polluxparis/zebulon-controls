@@ -1,52 +1,63 @@
 import React, { Component } from "react";
 import { ScrollableArea } from "./ScrollableArea";
-class FilterValues extends ScrollableArea {
-  getRatios = () => {
-    const { height, rowCount, rowHeight, startIndex } = this.props;
-    return {
-      vertical: {
-        display: height / (rowCount * rowHeight),
-        position: startIndex / rowCount
-      },
-      horizontal: {
-        display: 1.1,
-        position: 0
+import { ScrollableGrid } from "./ScrollableGrid";
+import { ScrollbarSize } from "./constants";
+class FilterValues extends ScrollableGrid {
+  componentDidUpdate() {
+    if (this.focusedIndex !== undefined) {
+      const element = document.getElementById(`checkbox ${this.focusedIndex}`);
+      if (element) {
+        element.focus();
       }
-    };
+      this.focusedIndex = undefined;
+    }
+  }
+  onClick = (id, index) => {
+    this.selectCell({ rows: index, columns: 0 });
+    this.props.onChangeCheck(id, index);
+  };
+  selectRange = range => {
+    this.focusedIndex = range.end.rows;
+    this.setState({ selectedRange: range });
+  };
+  getRowWidth = () => {
+    this.rowWidth = this.props.width - ScrollbarSize;
+    this.lockedWidth = 0;
   };
   getContent = () => {
     const items = [];
     let i = 0,
-      index = this.props.startIndex;
-    const { filter, onChangeCheck, rowCount, height, rowHeight } = this.props;
+      index = this.state.scroll.rows.startIndex;
+    const { filter, rowCount, height, rowHeight } = this.props;
     while (index < rowCount && i < height / rowHeight) {
-      const { id, label } = this.props.items[index];
+      const { id, label } = this.props.data[index];
+      const style = { height: rowHeight, width: "inherit", display: "flex" };
+      if (index === this.state.selectedRange.end.rows) {
+        style.backgroundColor = "aliceblue";
+      }
+      const ix = index;
       items.push(
-        <div
-          key={index}
-          style={{ height: rowHeight, width: "inherit", display: "flex" }}
-        >
+        <div key={index} style={style}>
           <input
+            id={`checkbox ${index}`}
             type="checkbox"
             checked={filter[id] !== undefined}
-            onChange={() => onChangeCheck(id, index)}
+            onChange={() => this.onClick(id, ix)}
           />
-          <div onClick={() => onChangeCheck(id, index)}>{label}</div>
+          <div onClick={() => this.onClick(id, ix)}>{label}</div>
         </div>
       );
       index++;
       i++;
     }
-    return items;
-  };
-  onScrollEvent = e => {
-    if (e.type === "scrollbar") {
-      const startIndex = Math.round(this.props.rowCount * e.positionRatio);
-      this.ratios.vertical.position = startIndex / this.props.rowCount;
-      this.props.onScroll(startIndex);
-    }
+    return (
+      <div id="content" style={{}} onWheel={this.onWheel}>
+        {items}
+      </div>
+    );
   };
 }
+
 export class Filter extends Component {
   constructor(props) {
     super(props);
@@ -54,7 +65,6 @@ export class Filter extends Component {
       items: [...props.items],
       filter: { ...props.filter },
       rowCount: props.items.length,
-      startIndex: 0,
       checkAll: false,
       maxRows: props.maxRows || 10,
       rowHeight: props.rowHeight || 20
@@ -72,24 +82,6 @@ export class Filter extends Component {
       });
     }
   }
-  onScroll = startIndex => {
-    this.setState({ startIndex });
-  };
-
-  onWheel = e => {
-    e.preventDefault();
-    if (this.state.maxRows < this.state.rowCount) {
-      const direction = Math.sign(e.deltaY);
-      const startIndex =
-        direction === 1
-          ? Math.min(
-              this.state.startIndex + 1,
-              this.state.rowCount - this.state.maxRows
-            )
-          : Math.max(this.state.startIndex - 1, 0);
-      this.onScroll(startIndex);
-    }
-  };
   filterItems = value => {
     const v = value.toLowerCase();
     const items = this.props.items.filter(item => {
@@ -112,6 +104,7 @@ export class Filter extends Component {
       delete filter[id];
     }
     this.setState({ filter, index, changed: !this.state.changed });
+    //this.selectCell({ rows: index, columns: 0 });
   };
   onChangeCheckAll = () => {
     const filter = this.state.items.reduce(
@@ -132,23 +125,21 @@ export class Filter extends Component {
       changed: !this.state.changed
     });
   };
-  handleClick = () => {
+  onOk = () => {
     const filterKeys = Object.values(this.state.filter);
     const filter =
       filterKeys.length === this.props.items.length || filterKeys.length === 0
         ? null
         : this.state.filter;
-    // this.props.filterLeaves(filter);
     this.props.onOk(filter);
   };
   render() {
-    // const rowHeight = 20;
     const { maxRows, rowHeight } = this.state;
     return (
       <div
+        id="filter"
         style={{
           ...this.props.style,
-          // width: "fit-content",
           height: "fit-content"
         }}
         onWheel={this.onWheel}
@@ -190,19 +181,14 @@ export class Filter extends Component {
             }}
             rowCount={this.state.rowCount}
             rowHeight={rowHeight}
-            items={this.state.items}
-            startIndex={this.state.startIndex}
-            onScroll={this.onScroll}
+            data={this.state.items}
             filter={this.state.filter}
             onChangeCheck={this.onChangeCheck}
-            // rowRenderer={this.itemRenderer}
             changed={this.state.changed}
+            ref={ref => (this.values = ref)}
           />
         </div>
-        <button
-          style={{ width: "96%", margin: "2%" }}
-          onClick={this.handleClick}
-        >
+        <button style={{ width: "96%", margin: "2%" }} onClick={this.onOk}>
           Apply filter
         </button>
       </div>

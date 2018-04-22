@@ -225,8 +225,8 @@ export class Layout extends Component {
           <ContextualMenuClient
             id={"layout-title: " + id}
             key={index}
-            menuId="layout-menu"
-            componentId={"layout"}
+            menu="layout-menu"
+            component={"layout"}
           >
             <div
               id={"layout-title: " + id}
@@ -320,8 +320,8 @@ export class Layout extends Component {
         <ContextualMenuClient
           id={"layout-body: " + layout.id}
           key={index}
-          menuId="layout-menu"
-          componentId={"layout"}
+          menu="layout-menu"
+          component={"layout"}
         >
           <div style={{ width: widthBody, height: heightBody }} />
         </ContextualMenuClient>
@@ -476,13 +476,13 @@ export class Layout extends Component {
     } else if (item.id === 5) {
       layout.display = layout.display === "flex" ? "block" : "-webkit-box";
     } else if (item.id >= 100) {
-      layout.content = item.componentId;
+      layout.content = item.component;
     }
     this.setState({ layout: this.state.layout });
     // console.log("clickmenu", data, item, layout);
   };
   // ---------------------------------------------
-  getMenu = (menuId, data) => {
+  getMenu = (menu, data) => {
     const ids = this.getIds(data.id);
     const root = ids.length === 1;
     const layout = this.getLayout(ids);
@@ -494,10 +494,9 @@ export class Layout extends Component {
       type: "menu-item",
       separation: false,
       caption: `${this.state.components[key].caption}`,
-      componentId: this.state.components[key].id,
+      component: this.state.components[key].id,
       onClick: this.handleClickMenu
     }));
-    // console.log("getMenu", menuId, data);
     menus.push({
       id: menus.length,
       type: "menu-item",
@@ -832,7 +831,7 @@ export class Layout extends Component {
       <ContextualMenu
         key="layout-menu"
         getMenu={this.getMenu}
-        componentId="layout"
+        component="layout"
         ref={ref => (this.contextualMenu = ref)}
       />
     ) : null;

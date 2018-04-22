@@ -99,6 +99,9 @@ export class Input extends Component {
         value.slice(value.length - 1, value.length) === "."
           ? value.slice(0, value.length - 1)
           : value;
+      if (v === "-") {
+        v = "";
+      }
       return !isNaN(Number(v));
     } else if (dataType === "date") {
       v = value.match(/[0123456789.:/ ]+/g) || [];
@@ -114,7 +117,7 @@ export class Input extends Component {
       inputType,
       onChange,
       filterTo,
-      onClick
+      onMouseDown
     } = this.props;
     const column = this.column;
     const { dataType, format } = column || { dataType: this.props.dataType };
@@ -132,14 +135,16 @@ export class Input extends Component {
           validatedValue = !this.state.value;
           value = validatedValue;
           if (inputType !== "filter" && !this.props.focused) {
-            onClick(e);
+            onMouseDown(e);
           }
         }
       } else if (dataType === "date") {
         validatedValue = stringToDate(value, format);
       } else if (dataType === "number") {
         validatedValue = value === "" ? null : Number(value);
-        // value = formatValue(this.props, validatedValue);
+        if (isNaN(validatedValue)) {
+          validatedValue = null;
+        }
       } else {
         validatedValue = value;
       }
@@ -157,11 +162,6 @@ export class Input extends Component {
           column.reference &&
           column.selectItems
         ) {
-          // const v = column.primaryKeyAccessorFunction({
-          //   row: { [column.reference]: validatedValue }
-          // });
-          // const fk = column.foreignKeyAccessor.slice(4);
-          // row[fk] = Number(v);
           column.setForeignKeyAccessorFunction({
             value: validatedValue.pk_,
             row
@@ -183,7 +183,6 @@ export class Input extends Component {
       onFocus(e, row, column);
       if (column.filterType !== "values") {
         this.focused = true;
-        // console.log("focus", this.state.value);
         const formatedValue = formatValue(
           this.props,
           this.state.value,
@@ -193,6 +192,8 @@ export class Input extends Component {
           formatedValue
         });
       }
+    } else if (onFocus) {
+      onFocus(e, row, column);
     }
   };
   render() {
@@ -200,16 +201,16 @@ export class Input extends Component {
       row,
       editable,
       inputType,
-      // onChange,
       hasFocus,
       select,
       label,
       className,
       style,
-      onClick,
+      onMouseDown,
+      onMouseUp,
       onDoubleClick,
       onMouseOver,
-      // onFocus,
+      onFocus,
       filterTo,
       tabIndex,
       id
@@ -229,7 +230,8 @@ export class Input extends Component {
           key={id}
           className={className || "zebulon-input zebulon-input-select"}
           style={style}
-          onClick={onClick}
+          onMouseDown={onMouseDown}
+          onMouseUp={onMouseUp}
           onMouseOver={onMouseOver}
           onDoubleClick={onDoubleClick}
         >
@@ -279,6 +281,8 @@ export class Input extends Component {
             value={value}
             style={innerStyle}
             autoFocus={hasFocus}
+            onFocus={this.handleFocus}
+            ref={ref => (this.input = ref)}
           >
             {options.map((item, index) => {
               return (
@@ -302,13 +306,15 @@ export class Input extends Component {
             type="checkbox"
             id={id}
             key={id}
-            // className={className || "zebulon-input"}
+            autoFocus={hasFocus}
             style={innerStyle}
             checked={this.state.value || false}
             disabled={false}
             onChange={this.handleChange}
-            onFocus={onClick}
+            onFocus={onMouseDown}
+            onMouseUp={onMouseUp}
             tabIndex={tabIndex}
+            ref={ref => (this.input = ref)}
           />
         );
       } else {
@@ -324,15 +330,15 @@ export class Input extends Component {
             className={className || "zebulon-table-input"}
             autoFocus={hasFocus && inputType !== "filter"}
             style={innerStyle}
-            // draggable={false}
-            value={value}
+            value={
+              hasFocus && inputType === "filter" ? this.state.value : value
+            }
             disabled={disabled}
             onChange={this.handleChange}
-            // onBlur={this.handleBlur}
-            // tabIndex={0}
             onFocus={this.handleFocus}
             onBlur={this.handleBlur}
             tabIndex={tabIndex}
+            ref={ref => (this.input = ref)}
           />
         );
       }
@@ -345,7 +351,6 @@ export class Input extends Component {
             style={{ ...style }}
             onDrop={e => e.preventDefault()}
             onDoubleClick={onDoubleClick}
-            // onClick={onClick}
           >
             {input}
           </div>
@@ -358,7 +363,6 @@ export class Input extends Component {
             style={{ ...style }}
             onDrop={e => e.preventDefault()}
             onDoubleClick={onDoubleClick}
-            // onClick={onClick}
           >
             {input}
           </div>

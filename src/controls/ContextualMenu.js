@@ -131,7 +131,7 @@ export class ContextualMenu extends Component {
 		super(props);
 		this.state = {
 			menu: null,
-			componentId: props.componentId,
+			component: props.component,
 			position: { x: 0, y: 0 }
 		};
 		this.openedLevel = {};
@@ -139,7 +139,7 @@ export class ContextualMenu extends Component {
 	}
 	componentDidMount() {
 		window.addEventListener("MENU_EVENT", this.handleEvent);
-		this.div = document.getElementById(this.state.componentId);
+		this.div = document.getElementById(this.state.component);
 	}
 	componentWillUnmount() {
 		window.removeEventListener("MENU_EVENT", this.handleEvent);
@@ -148,15 +148,15 @@ export class ContextualMenu extends Component {
 		this.setState({ menu: null });
 	};
 	handleEvent = e => {
-		const { position, menuId, data, componentId } = e.detail;
-		if (componentId === this.state.componentId) {
+		const { position, menu, data, component } = e.detail;
+		if (component === this.state.component) {
 			const rect = this.div.getBoundingClientRect();
 			position.y -= rect.top;
 			position.x -= rect.left;
-			const menu = this.props.getMenu(menuId, data);
-			if (menu) {
-				menu.visible = true;
-				this.setState({ menu, data, position });
+			const menu_ = this.props.getMenu(menu, data);
+			if (menu_) {
+				menu_.visible = true;
+				this.setState({ menu: menu_, data, position });
 			}
 		}
 	};
@@ -253,10 +253,10 @@ export class ContextualMenuClient extends Component {
 			// e.stopPropagation();
 			const event = new CustomEvent(MENU_EVENT, {
 				detail: {
-					componentId: this.props.componentId,
+					component: this.props.component,
 					ref: this.ref,
 					position: { x: e.clientX, y: e.clientY },
-					menuId: this.props.menuId,
+					menu: this.props.menu,
 					data: this.props.collect
 						? this.props.collect(this.props)
 						: this.props
@@ -267,14 +267,17 @@ export class ContextualMenuClient extends Component {
 		}
 	};
 	render() {
-		return (
+		const props = { ...this.props };
+		const children = props.children;
+		delete props.children;
+		return React.cloneElement(
 			<div
 				onContextMenu={this.onContextMenu}
 				ref={ref => (this.ref = ref)}
-				style={{ width: "inherit" }}
 			>
-				{this.props.children}
-			</div>
+				{children}
+			</div>,
+			props
 		);
 	}
 }

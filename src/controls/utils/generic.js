@@ -267,6 +267,7 @@ export const keyMap = {
   9: "Tab",
   13: "Enter",
   27: "Escape",
+  32: "Space",
   33: "PageUp",
   34: "PageDown",
   35: "End",
@@ -279,7 +280,13 @@ export const keyMap = {
   109: "-",
   187: "=",
   65: "a",
+  70: "f",
   112: "f1",
+  119: "f8",
+  120: "f9",
+  121: "f10",
+  122: "f11",
+  123: "f12",
   48: "0",
   96: "numpad0"
 };
@@ -287,9 +294,10 @@ export const keyMap = {
 export const isNavigationKey = e => {
   const keyCode = e.which || e.keyCode;
   return (
-    (keyCode > 32 && keyCode < 41) || // arrows...
+    (keyCode >= 32 && keyCode < 41) || // space+arrows...
     keyCode === 9 || // tab
     keyCode === 27 || // escape
+    keyCode === 13 || // enter
     (keyCode === 65 && (e.metaKey || e.ctrlKey)) // ctrl a
   );
 };

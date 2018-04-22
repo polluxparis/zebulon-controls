@@ -624,11 +624,11 @@ export class ScrollableGrid extends ScrollableArea {
     };
   };
   getContent = () => {
-    const { data, height, rowHeight, width, rowWidth } = this.props;
+    const { data, height, rowHeight } = this.props;
     let i = 0,
       index = this.state.scroll.rows.startIndex;
     const items = [];
-    const visibleWidth = width - this.scrollbars.vertical.width;
+    // const visibleWidth = width - this.scrollbars.vertical.width;
     while (index < data.length && i < height / rowHeight) {
       const selected = index === this.state.selectedRange.end.rows;
       const ix = index;

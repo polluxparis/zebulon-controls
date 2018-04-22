@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { ScrollableArea } from "./ScrollableArea";
 import { ScrollableGrid } from "./ScrollableGrid";
 import { ScrollbarSize } from "./constants";
 class FilterValues extends ScrollableGrid {

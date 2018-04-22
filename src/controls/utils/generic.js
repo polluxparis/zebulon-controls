@@ -218,7 +218,7 @@ export const dateToString = (d, fmt) => {
     mi: String(d.getMinutes()).padStart(2, "0"),
     ss: String(d.getSeconds()).padStart(2, "0")
   };
-  const format = fmt.split(/[\/: ]/);
+  const format = fmt.split(/[/: ]/);
   let index = 0,
     dd = "";
   format.forEach(f => {

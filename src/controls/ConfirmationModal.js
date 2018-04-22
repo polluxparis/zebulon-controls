@@ -186,9 +186,6 @@ export class ConfirmationModal extends React.Component {
 					this.row = message;
 					this.onConfirm(ok, undefined, props);
 				},
-				ref: ref => {
-					this.foreignTable = ref;
-				},
 				onDoubleClick: () => this.onConfirm(true, undefined, props),
 				keyEvent: props.keyEvent,
 				onRowEnter: ({ row }) => {

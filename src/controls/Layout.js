@@ -1,8 +1,7 @@
-import React, { Component, cloneElement } from "react";
+import React, { Component } from "react";
 import classnames from "classnames";
 import { ContextualMenu, ContextualMenuClient } from "./ContextualMenu";
 import { Input } from "./Input";
-import * as utils from "./utils/generic";
 
 // import { ZebulonTable } from "../table/ZebulonTable";
 // import { buildMeta } from "./meta.dataset";
@@ -65,7 +64,7 @@ export class Layout extends Component {
     // }
     if (
       this.props.sizes.height !== nextProps.sizes.height ||
-      this.props.sizes.width != this.state.layout
+      this.props.sizes.width !== this.state.layout
     ) {
       const layout = this.state.layout;
       layout.height = nextProps.sizes.height;
@@ -121,16 +120,7 @@ export class Layout extends Component {
   isVisible = (layoutId, index) =>
     (this.state.selectedTabs[layoutId] || 0) === index;
   buildLayout = (layout, parent, index, components) => {
-    const {
-      height,
-      width,
-      display,
-      resizable,
-      layouts,
-      content,
-      title,
-      visible
-    } = layout;
+    const { height, width, display, layouts, content, visible } = layout;
     layout.id = parent ? `${parent.id} - ${index}` : String(index);
     layout.parent = parent || {};
     layout.layouts = layout.layouts || [];
@@ -458,7 +448,7 @@ export class Layout extends Component {
   };
   handleClickMenu = (data, item) => {
     const ids = this.getIds(data.id);
-    const root = ids.length === 1;
+    // const root = ids.length === 1;
     const layout = this.getLayout(ids);
     if (item.id === 0) {
       this.remove(layout);
@@ -484,7 +474,7 @@ export class Layout extends Component {
   // ---------------------------------------------
   getMenu = (menu, data) => {
     const ids = this.getIds(data.id);
-    const root = ids.length === 1;
+    // const root = ids.length === 1;
     const layout = this.getLayout(ids);
     const menus = [];
     const menuComponents = Object.keys(
@@ -621,14 +611,14 @@ export class Layout extends Component {
         e.target.id.slice(length, length + 2) === "-V"
           ? "vertical"
           : "horizontal";
-      const rect = document
-        .getElementById("layout: " + e.target.id.slice(length + 4))
-        .getBoundingClientRect();
-      const dragRect = this.dragLayer.getBoundingClientRect();
-      const dragPreviewStyle = {
-        position: "relative",
-        backgroundColor: "red"
-      };
+      // const rect = document
+      //   .getElementById("layout: " + e.target.id.slice(length + 4))
+      //   .getBoundingClientRect();
+      // const dragRect = this.dragLayer.getBoundingClientRect();
+      // const dragPreviewStyle = {
+      //   position: "relative",
+      //   backgroundColor: "red"
+      // };
       // let x, y;
       // if (this.dragDirection === "vertical") {
       //   dragPreviewStyle.height = rect.height;

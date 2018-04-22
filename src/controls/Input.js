@@ -80,7 +80,7 @@ export class Input extends Component {
     const options = nextProps.select;
     if (options) {
       if (isPromise(options)) {
-        this.state.options = [];
+        this.setState.options = [];
         options.then(options => {
           this.setState({ options });
         });
@@ -210,8 +210,6 @@ export class Input extends Component {
       onMouseUp,
       onDoubleClick,
       onMouseOver,
-      onFocus,
-      filterTo,
       tabIndex,
       id
     } = this.props;
@@ -251,12 +249,7 @@ export class Input extends Component {
       let disabled = !editable || undefined;
       if (select) {
         let options = this.state.options;
-
-        // if (typeof options === "function") {
-        //   options = options(row);
-        // }
         if (typeof options === "object") {
-          // const indexDot = column.accessor.indexOf(".");
           if (column.reference) {
             value = column.primaryKeyAccessorFunction({ row });
             options = Object.keys(options).map(key => ({
@@ -268,9 +261,7 @@ export class Input extends Component {
           } else {
             options = Object.values(options);
           }
-          // if (!column.mandatory) {
           options = [{ id: undefined, label: "" }].concat(options);
-          // }
         }
         input = (
           <select

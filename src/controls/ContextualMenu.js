@@ -1,78 +1,8 @@
-import React, { Component } from "react";
+import React, { Component, cloneElement } from "react";
 import classNames from "classnames";
 
-const buildItems = (items, style, level, handleMenuEvent) => {
-	return (
-		<div
-			key={`group-${level}`}
-			className="zebulon-contextmenu-group"
-			style={style}
-		>
-			{items.map((item, index) => {
-				item.level = level;
-				if (item.type === "jsx") {
-					return item.content;
-				} else {
-					return (
-						<MenuItem
-							key={`item-${item.id}`}
-							item={item}
-							handleMenuEvent={handleMenuEvent}
-						/>
-					);
-				}
-			})}
-		</div>
-	);
-};
-const buildMenu = (menu, top, left, handleEvent) => {
-	if (menu && menu.visible) {
-		let opened = 0,
-			level = 0,
-			groupTop = 0;
-		let item = menu,
-			groups = [];
-		let style = {
-			position: "absolute",
-			top: top,
-			left,
-			display: "flex"
-		};
-		while (opened >= 0) {
-			groupTop += opened * 24;
-			const group = buildItems(
-				item.children,
-				{
-					position: "relative",
-					top: groupTop // a voir 24 pour prendre en co;pte le padding 2
-				},
-				level,
-				handleEvent
-			);
-			groups.push(group);
-			level++;
-			opened = item.children.findIndex(child => child.opened);
-			if (opened !== -1) {
-				item = item.children[opened];
-			}
-		}
-		return (
-			<div id="contextual-menu" style={style}>
-				{groups}
-			</div>
-		);
-	} else {
-		return (
-			<div
-				id="contextual-menu"
-				style={{ height: 0, width: 0, position: "relative" }}
-			/>
-		);
-	}
-};
 export class MenuItem extends Component {
 	handleMenuEvent = e => {
-		// console.log(this.props, e);
 		e.preventDefault();
 		this.props.handleMenuEvent(e, this.props.item);
 	};
@@ -144,6 +74,79 @@ export class ContextualMenu extends Component {
 	componentWillUnmount() {
 		window.removeEventListener("MENU_EVENT", this.handleEvent);
 	}
+	buildItems = (items, style, level, handleMenuEvent, keyEvent) => {
+		return (
+			<div
+				key={`group-${level}`}
+				className="zebulon-contextmenu-group"
+				style={style}
+			>
+				{items.map((item, index) => {
+					item.level = level;
+					if (item.type === "jsx") {
+						return cloneElement(item.content, {
+							keyEvent,
+							ref: ref => (this.element = ref)
+						});
+					} else {
+						return (
+							<MenuItem
+								key={`item-${item.id}`}
+								item={item}
+								handleMenuEvent={handleMenuEvent}
+							/>
+						);
+					}
+				})}
+			</div>
+		);
+	};
+	buildMenu = (menu, top, left, handleEvent, keyEvent) => {
+		if (menu && menu.visible) {
+			let opened = 0,
+				level = 0,
+				groupTop = 0;
+			let item = menu,
+				groups = [];
+			let style = {
+				position: "absolute",
+				top: top,
+				left,
+				display: "flex"
+			};
+			while (opened >= 0) {
+				groupTop += opened * 24;
+				const group = this.buildItems(
+					item.children,
+					{
+						position: "relative",
+						top: groupTop // a voir 24 pour prendre en compte le padding 2
+					},
+					level,
+					handleEvent,
+					keyEvent
+				);
+				groups.push(group);
+				level++;
+				opened = item.children.findIndex(child => child.opened);
+				if (opened !== -1) {
+					item = item.children[opened];
+				}
+			}
+			return (
+				<div id="contextual-menu" style={style}>
+					{groups}
+				</div>
+			);
+		} else {
+			return (
+				<div
+					id="contextual-menu"
+					style={{ height: 0, width: 0, position: "relative" }}
+				/>
+			);
+		}
+	};
 	close = () => {
 		this.setState({ menu: null });
 	};
@@ -219,7 +222,10 @@ export class ContextualMenu extends Component {
 		}
 	};
 	handleKeyDown = (e, item) => {
-		// console.log("keydown menu event", e.key, this.navigation);
+		console.log("keydown menu event", e.key, this.element);
+		if (this.element) {
+			console.log("keydown menu event1", e.key, this.element.values);
+		}
 		if (this.state.menu.visible) {
 			// escape
 			if (e.which === 27) {
@@ -230,15 +236,17 @@ export class ContextualMenu extends Component {
 			if (this.navigation && e.key === "Tab") {
 				return true;
 			}
+			this.setState({ keyEvent: e });
 		}
 	};
 	render() {
 		if (this.state.menu) {
-			return buildMenu(
+			return this.buildMenu(
 				this.state.menu,
 				this.state.position.y,
 				this.state.position.x,
-				this.handleMenuEvent
+				this.handleMenuEvent,
+				this.state.keyEvent
 			);
 		}
 		return null;
@@ -250,7 +258,6 @@ export class ContextualMenuClient extends Component {
 		if (e.button === 2) {
 			e.preventDefault();
 			e.persist();
-			// e.stopPropagation();
 			const event = new CustomEvent(MENU_EVENT, {
 				detail: {
 					component: this.props.component,
@@ -270,7 +277,9 @@ export class ContextualMenuClient extends Component {
 		const props = { ...this.props };
 		const children = props.children;
 		delete props.children;
-		return React.cloneElement(
+		delete props.collect;
+
+		return cloneElement(
 			<div
 				onContextMenu={this.onContextMenu}
 				ref={ref => (this.ref = ref)}

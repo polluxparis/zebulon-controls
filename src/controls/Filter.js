@@ -70,7 +70,9 @@ export class Filter extends Component {
     };
   }
   componentWillReceiveProps(nextProps) {
-    if (
+    if (this.props.keyEvent !== nextProps.keyEvent && this.values) {
+      this.values.handleNavigationKeys(nextProps.keyEvent);
+    } else if (
       nextProps.items !== this.props.items ||
       nextProps.filter !== this.props.filter
     ) {
@@ -80,6 +82,9 @@ export class Filter extends Component {
         rowCount: nextProps.items.length
       });
     }
+  }
+  shouldComponentUpdate(nextProps, nextState) {
+    return this.props.keyEvent === nextProps.keyEvent;
   }
   filterItems = value => {
     const v = value.toLowerCase();

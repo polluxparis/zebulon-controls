@@ -81,6 +81,7 @@ export class ScrollableGrid extends ScrollableArea {
         );
       }
       if (
+        ratios &&
         nextProps.height !== this.props.height &&
         this.ratios &&
         this.ratios.vertical.position > 1 - Math.min(ratios.vertical.display, 1)

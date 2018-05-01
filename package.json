@@ -24,5 +24,8 @@
     "presets": [
       "react-app"
     ]
+  },
+  "devDependencies": {
+    "react-scripts": "^1.1.4"
   }
 }

@@ -2,5 +2,6 @@ build
 src
 coverage
 public
-*zebulon-controls*
-*.sublime-*
+zebulon-controls*
+controls.sublime-*
+package-o*

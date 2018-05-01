@@ -18,6 +18,8 @@ lib
 .env
 npm-debug.log
 yarn-error.log
-zebulon-controls-*
-controls.sublime-workspace
+zebulon-controls*
+*sublime*
 controls.sublime-project
+controls.sublime-workspace
+package-o*

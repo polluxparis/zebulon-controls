@@ -281,7 +281,7 @@ export class ContextualMenuClient extends Component {
 
 		return cloneElement(
 			<div
-				onContextMenu={this.onContextMenu}
+				onContextMenu={this.props.menu ? this.onContextMenu : undefined}
 				ref={ref => (this.ref = ref)}
 			>
 				{children}

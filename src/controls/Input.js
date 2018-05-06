@@ -7,6 +7,7 @@ import {
   isNullOrUndefined,
   isPromise
 } from "./utils/generic";
+import { ContextualMenuClient } from "./ContextualMenu";
 
 const formatValue = (props, value, focused) => {
   // console.log(1);
@@ -211,7 +212,9 @@ export class Input extends Component {
       onDoubleClick,
       onMouseOver,
       tabIndex,
-      id
+      id,
+      menu,
+      component
     } = this.props;
     let input;
     let value = this.state.formatedValue;
@@ -223,18 +226,23 @@ export class Input extends Component {
         dataType !== "boolean")
     ) {
       input = (
-        <div
+        <ContextualMenuClient
           id={id}
           key={id}
+          row={row}
+          column={column}
           className={className || "zebulon-input zebulon-input-select"}
           style={style}
           onMouseDown={onMouseDown}
           onMouseUp={onMouseUp}
           onMouseOver={onMouseOver}
           onDoubleClick={onDoubleClick}
+          ref={ref => (this.input = ref)}
+          menu={menu}
+          component={component}
         >
           {value}
-        </div>
+        </ContextualMenuClient>
       );
     } else {
       const innerStyle = {
@@ -335,28 +343,36 @@ export class Input extends Component {
       }
       if (dataType === "boolean") {
         input = (
-          <div
+          <ContextualMenuClient
+            menu={menu}
+            component={component}
             id={id}
             key={id}
+            row={row}
+            column={column}
             className={className}
             style={{ ...style }}
             onDrop={e => e.preventDefault()}
             onDoubleClick={onDoubleClick}
           >
             {input}
-          </div>
+          </ContextualMenuClient>
         );
       } else {
         input = (
-          <div
+          <ContextualMenuClient
+            menu={menu}
+            component={component}
             id={id}
             key={id}
+            row={row}
+            column={column}
             style={{ ...style }}
             onDrop={e => e.preventDefault()}
             onDoubleClick={onDoubleClick}
           >
             {input}
-          </div>
+          </ContextualMenuClient>
         );
       }
     }

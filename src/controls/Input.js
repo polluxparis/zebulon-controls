@@ -42,9 +42,10 @@ export class Input extends Component {
     this.state = {
       value,
       formatedValue: formatValue(props, value, props.focused),
-      loaded: true
+      loaded: true,
+      focused: props.focused
     };
-    this.focused = props.focused;
+    // this.focused = props.focused;
     if (props.select && props.editable && props.focused) {
       let options = props.select;
       if (typeof options === "function") {
@@ -67,17 +68,22 @@ export class Input extends Component {
       index_: 0,
       caption: nextProps.label
     };
-    this.focused = nextProps.focused;
-    const formatedValue = formatValue(nextProps, nextProps.value, this.focused);
+
     if (
       nextProps.value !== this.state.value ||
-      formatedValue !== this.state.formatedValue
+      nextProps.focused !== this.state.focused
     ) {
       this.setState({
         value: nextProps.value,
-        formatedValue
+        formatedValue: formatValue(
+          nextProps,
+          nextProps.value,
+          nextProps.focused
+        ),
+        focused: nextProps.focused
       });
     }
+    // this.focused = nextProps.focused;
     const options = nextProps.select;
     if (options) {
       if (isPromise(options)) {
@@ -183,14 +189,11 @@ export class Input extends Component {
     if (inputType === "filter") {
       onFocus(e, row, column);
       if (column.filterType !== "values") {
-        this.focused = true;
-        const formatedValue = formatValue(
-          this.props,
-          this.state.value,
-          this.focused
-        );
+        // this.focused = true;
+        const formatedValue = formatValue(this.props, this.state.value, true);
         this.setState({
-          formatedValue
+          formatedValue,
+          focused: true
         });
       }
     } else if (onFocus) {
@@ -222,7 +225,7 @@ export class Input extends Component {
     const { dataType } = column;
     if (
       inputType !== "filter" &&
-      (!((this.focused || this.props.column === undefined) && editable) &&
+      (!((this.state.focused || this.props.column === undefined) && editable) &&
         dataType !== "boolean")
     ) {
       input = (

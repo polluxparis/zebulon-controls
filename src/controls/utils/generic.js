@@ -96,6 +96,87 @@ export function findInArray(array, predicate) {
   }
   return undefined;
 }
+export const union = (arg0, arg1) => {
+  if (arg1) {
+    return [...new Set(arg0.concat(arg1))];
+  }
+  let res;
+  if (arg1) {
+    res = [...arg[0].concat(arg[1])];
+  } else {
+    res = arg0.reduce((acc, array) => {
+      if (!acc.length) {
+        acc = array || [];
+      } else {
+        acc = acc.concat(array);
+      }
+      return acc;
+    }, []);
+  }
+  res = [...new Set(res)];
+  // res.sort((a,b)=>);
+  return res;
+};
+// calculate the intersection of two arrays (arg1 is the second array) or an array of arrays (arg0)
+export const intersection = (arg0, arg1) => {
+  const intersection_ = (arg0, arg1) => {
+    if (isUndefined(arg0)) {
+      return arg1;
+    } else if (isUndefined(arg1)) {
+      return arg0;
+    } else {
+      const n = arg0.length;
+      const m = arg1.length;
+      let i = 0;
+      let j = 0;
+      const res = [];
+      while (i < n && j < m) {
+        if (arg0[i] > arg1[j]) {
+          j += 1;
+        } else if (arg0[i] < arg1[j]) {
+          i += 1;
+        } else {
+          res.push(arg0[i]);
+          i += 1;
+          j += 1;
+        }
+      }
+      return res;
+    }
+  };
+  if (arg1) {
+    return intersection_(arg0, arg1);
+  } else if (!arg0.length) {
+    return [];
+  } else if (arg0.length === 1) {
+    return arg0[0];
+  } else {
+    return arg0
+      .slice(1)
+      .reduce((acc, array) => intersection_(acc, array), arg0[0]);
+  }
+};
+export const hasIntersection = (arg0, arg1) => {
+  if (isUndefined(arg0) || isUndefined(arg1)) {
+    return true;
+  } else {
+    const n = arg0.length;
+    const m = arg1.length;
+    let i = 0;
+    let j = 0;
+    // const res = [];
+    while (i < n && j < m) {
+      if (arg0[i] > arg1[j]) {
+        j += 1;
+      } else if (arg0[i] < arg1[j]) {
+        i += 1;
+      } else {
+        return true;
+      }
+    }
+    return false;
+  }
+};
 
 export function isInRange(
   { columns: columnIndex, rows: rowIndex },
@@ -205,7 +286,8 @@ export const dateToString = (d, fmt) => {
   if (!isDate(d)) {
     return undefined;
   }
-  if (!fmt || fmt === "LocaleDateString") return d.toLocaleDateString();
+  if (isNullValue(fmt) || fmt === "LocaleDateString")
+    return d.toLocaleDateString();
   else if (fmt === "LocaleString") return d.toLocaleString();
   else if (fmt === "LocaleTimeString") return d.toLocaleTimeString();
   else if (fmt === "ISO") return d.toISOString();
@@ -230,7 +312,17 @@ export const dateToString = (d, fmt) => {
   });
   return dd.slice(0, dd.length - 1);
 };
-
+// export const toMonth = d => {
+//   const d_ = new Date(d);
+//   d_.setDate(1);
+//   return new Date(d_);
+// };
+// export const toYear = d => {
+//   const d_ = new Date(d);
+//   d_.setDate(1);
+//   d_.setMonth(0);
+//   return new Date(d_);
+// };
 const daysByMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 export const stringToDate = (s, fmt) => {
   // format not managed yet
@@ -330,5 +422,109 @@ export const copy = text => {
     /* eslint-disable no-console */
     console.error("error during copy", error);
     /* eslint-enable */
+  }
+};
+
+const functionsByObject = (object, functions) => {
+  const f = functions[object];
+  const f_ = [];
+  Object.keys(f).forEach(type => {
+    const tp = type.slice(0, type.length - 1);
+    Object.keys(f[type]).forEach(code => {
+      const functionJS = f[type][code];
+      if (functionJS) {
+        f_.push({
+          id: code,
+          visibility: object === "globals_" ? "global" : object,
+          caption: code,
+          tp,
+          functionJS
+        });
+      }
+    });
+  });
+  return f_;
+};
+export const mergeFunctions = (functions, object) => {
+  const fg = {};
+  const fl = {};
+  (Array.isArray(functions) ? functions : [functions]).forEach(f => {
+    if (f.globals_) {
+      Object.keys(f.globals_).forEach(type => {
+        Object.keys(f.globals_[type]).forEach(f_ => {
+          fg["global" + "--" + type + "--" + f_] = f.globals_[type][f_];
+        });
+      });
+    }
+    if (f[object]) {
+      Object.keys(f[object]).forEach(type => {
+        Object.keys(f[object][type]).forEach(f_ => {
+          fl[object + "--" + type + "--" + f_] = f[object][type][f_];
+          delete fg["global" + "--" + type + "--" + f_];
+        });
+      });
+    }
+  });
+  const fs = { ...fg, ...fl };
+  return Object.keys(fs).map(key => {
+    const ks = key.split("--");
+    return {
+      id: ks[2],
+      caption: ks[2],
+      visibility: ks[0],
+      tp: ks[1].slice(0, ks[1].length - 1),
+      functionJS: fs[key]
+    };
+  });
+};
+export const functionsTable = functions => {
+  if (functions === undefined) {
+    return [];
+  }
+  // if(Array.isArray(functions){functionsTable(mergeFunctions)}
+  return Object.keys(functions).reduce(
+    (acc, object) => acc.concat(functionsByObject(object, functions)),
+    []
+  );
+};
+export const getFunction = (functions, type, value, utils) => {
+  if (typeof value === "function") {
+    return value;
+  } else if (typeof value === "string") {
+    const indexDot = value.indexOf(".");
+    if (indexDot !== -1) {
+      let v = value;
+      if (value.slice(0, indexDot) === "row") {
+        v = value.slice(indexDot + 1);
+      }
+      const keys = v.split(".");
+      return ({ row }) => {
+        return keys.reduce(
+          (acc, key, index) =>
+            acc[key] === undefined && index < keys.length - 1 ? {} : acc[key],
+          row
+        );
+      };
+    } else {
+      const v =
+        typeof value === "string"
+          ? functions.find(f => f.id === value && f.tp === type)
+          : [];
+
+      if (v) {
+        if (type === "accessor") {
+          return message => v.functionJS({ ...message, utils });
+        } else {
+          return v.functionJS;
+        }
+      } else if (type === "format") {
+        return ({ value: value_ }) => formatValue(value_, value);
+      } else {
+        return ({ row }) => row[value];
+      }
+    }
+  }
+  if (type === "format") {
+    return ({ value }) => formatValue(value);
   }
 };

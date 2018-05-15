@@ -608,7 +608,9 @@ export class ScrollableGrid extends ScrollableArea {
       vertical: {
         display: verticalDisplay,
         position: Math.min(
-          scroll.rows.startIndex / (data.length || 1),
+          (scroll.rows.startIndex +
+            (scroll.rows.direction === -1 && scroll.rows.shift ? 1 : 0)) /
+            (data.length || 1),
           1 - verticalDisplay
         )
       },

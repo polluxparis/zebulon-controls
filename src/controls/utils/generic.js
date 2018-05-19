@@ -448,7 +448,9 @@ const functionsByObject = (object, functions) => {
 export const mergeFunctions = (functions, object) => {
   const fg = {};
   const fl = {};
-  (Array.isArray(functions) ? functions : [functions]).forEach(f => {
+  (Array.isArray(functions)
+    ? functions.filter(f => f !== undefined)
+    : [functions || {}]).forEach(f => {
     if (f.globals_) {
       Object.keys(f.globals_).forEach(type => {
         Object.keys(f.globals_[type]).forEach(f_ => {
@@ -466,16 +468,40 @@ export const mergeFunctions = (functions, object) => {
     }
   });
   const fs = { ...fg, ...fl };
-  return Object.keys(fs).map(key => {
+  const ft = Object.keys(fs).map(key => {
     const ks = key.split("--");
     return {
       id: ks[2],
       caption: ks[2],
       visibility: ks[0],
       tp: ks[1].slice(0, ks[1].length - 1),
-      functionJS: fs[key]
+      functionJS: typeof fs[key] === "string" ? undefined : fs[key],
+      functionText: typeof fs[key] === "string" ? fs[key] : undefined,
+      isLocal: typeof fs[key] === "string"
     };
   });
+  const localFunctions = ft.filter(f => f.isLocal);
+  const accessors = ft.reduce((acc, f) => {
+    acc[f.id] = f.functionJS;
+    return acc;
+  }, {});
+  const accessor = accessor => accessors[accessor];
+
+  localFunctions.forEach(f => {
+    try {
+      eval("f.functionJS = " + f.functionText);
+    } catch (e) {
+      f.functionJS = () => {};
+    }
+    if (f.tp === "accessor") {
+      accessors[f.id] = f.functionJS;
+    }
+  });
+  return ft;
+  // return ft.reduce((acc, f) => {
+  //   acc[f.id] = f;
+  //   return acc;
+  // }, {});
 };
 export const functionsTable = functions => {
   if (functions === undefined) {

@@ -161,14 +161,22 @@ export class ScrollableGrid extends ScrollableArea {
   // ------------------------------------------------
   // to be overwritten
   // ------------------------------------------------
-  scrollOnKey = (cell, axis, direction, directionColumn, extension) => {
+  scrollOnKey = (
+    cell,
+    axis,
+    direction,
+    directionColumn,
+    extension,
+    dataLength = this.stopIndex[toAxis(AxisType.ROWS)] + 1
+  ) => {
     const scroll = this.state.scroll;
     // console.log("scrollonkey", this.props.scroll, this.stopIndex);
     const axisRow =
       (axis === AxisType.ROWS || axis === null) &&
       this.scrollbars["vertical"].width &&
       ((direction === 1 &&
-        cell[toAxis(AxisType.ROWS)] >= this.stopIndex[toAxis(AxisType.ROWS)]) ||
+        cell[toAxis(AxisType.ROWS)] >=
+          Math.min(dataLength - 1, this.stopIndex[toAxis(AxisType.ROWS)])) ||
         (direction === -1 &&
           cell[toAxis(AxisType.ROWS)] <=
             scroll[toAxis(AxisType.ROWS)].startIndex));

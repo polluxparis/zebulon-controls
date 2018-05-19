@@ -30,7 +30,7 @@ export const accessors = {
 					? ""
 					: utils.formatValue(
 							value,
-							format || column.format || "dd/mm/yyyy"
+							format || (column || {}).format || "dd/mm/yyyy"
 						),
 			"mm/yyyy": ({ value }) =>
 				utils.isNullOrUndefined(value)

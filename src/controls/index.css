@@ -117,28 +117,32 @@
 }
 .zebulon-layout {
 	box-sizing: border-box;
+	/*border: solid rgba(0, 0, 0, 0) 0.05em;*/
 	/*border: solid rgba(0, 0, 0, 0.2) 0.02em;*/
+}
+.zebulon-layout-active {
+	/*border: solid rgba(0, 0, 0, 0.7) 0.05em;*/
 }
 .zebulon-layout-component {
 	box-sizing: content-box;
-	border: solid blue 0.1em;
+	/*border: solid blue 0.1em;*/
 }
 .zebulon-layout-header {
 	font: inherit;
-	/*overflow: hidden;*/
-	/*white-space: nowrap;*/
 	height: inherit;
 	width: inherit;
-	box-sizing: border-box;
-	border: solid rgba(0, 0, 0, 0.2) 0.02em;
+	background-color: rgba(111, 149, 90, 0.1);
+	/*box-sizing: border-box;*/
+	/*border: solid rgba(0, 0, 0, 0.2) 0.02em;*/
 	/*padding: 0.2em;*/
 	/*outline: none;*/
 	user-select: none;
 }
 .zebulon-layout-header-active {
-	border: solid rgba(0, 0, 0, 0.8) 0.05em;
-	background-color: lightgrey;
+	/*border: solid rgba(0, 0, 0, 0.8) 0.05em;*/
+	/*background-color: lightgrey;*/
 	border-bottom: unset;
+	font-weight: bold;
 }
 .zebulon-layout-body {
 	box-sizing: border-box;
@@ -146,13 +150,18 @@
 	/*  padding-top: 1px;
   padding-left: 1px;
 */
-	margin: 1px;
+	/*margin: 1px;*/
 	/*font: inherit;*/
 }
-.zebulon-layout-body-active {
+/*.zebulon-layout-body-active {
 	box-sizing: border-box;
 	border: solid rgba(0, 0, 0, 0.8) 0.05em;
+}*/
+.zebulon-layout-component {
+	box-sizing: border-box;
+	/*border: solid rgba(0, 0, 0, 0) 0.05em;*/
 }
+
 .zebulon-layout-tab {
 	border: 1px solid #aaa;
 	text-align: center;
@@ -173,7 +182,7 @@
 	border-bottom: unset;
 }
 .zebulon-layout-resize-handle {
-	border: solid rgba(0, 0, 0, 0.5) 0.02em;
+	/*border: solid rgba(0, 0, 0, 0.5) 0.02em;*/
 	box-sizing: border-box;
 	background-color: rgba(0, 0, 0, 0.05);
 	margin: 0;

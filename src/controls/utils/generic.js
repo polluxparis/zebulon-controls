@@ -461,8 +461,10 @@ export const mergeFunctions = (functions, object) => {
     if (f[object]) {
       Object.keys(f[object]).forEach(type => {
         Object.keys(f[object][type]).forEach(f_ => {
-          fl[object + "--" + type + "--" + f_] = f[object][type][f_];
-          delete fg["global" + "--" + type + "--" + f_];
+          if (f[object][type][f_]) {
+            fl[object + "--" + type + "--" + f_] = f[object][type][f_];
+            delete fg["global" + "--" + type + "--" + f_];
+          }
         });
       });
     }

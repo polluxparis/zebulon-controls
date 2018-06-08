@@ -29,6 +29,7 @@ export class ScrollableGrid extends ScrollableArea {
       };
     }
     this.getRowWidth(props.meta, props.locked);
+    this.stopIndex = { rows: -1, columns: -1 };
   }
   getRowWidth = (meta, locked) => {
     this.rowWidth = this.props.width;
@@ -173,6 +174,7 @@ export class ScrollableGrid extends ScrollableArea {
     // console.log("scrollonkey", this.props.scroll, this.stopIndex);
     const axisRow =
       (axis === AxisType.ROWS || axis === null) &&
+      this.scrollbars &&
       this.scrollbars["vertical"].width &&
       ((direction === 1 &&
         cell[toAxis(AxisType.ROWS)] >=
@@ -183,6 +185,8 @@ export class ScrollableGrid extends ScrollableArea {
     const directionC = axis === null ? directionColumn : direction;
     const axisColumn =
       (axis === AxisType.COLUMNS || axis === null) &&
+      this.scrollbars &&
+      this.scrollbars["horizontal"] &&
       this.scrollbars["horizontal"].width &&
       ((directionC === 1 &&
         cell[toAxis(AxisType.COLUMNS)] >=
@@ -482,7 +486,14 @@ export class ScrollableGrid extends ScrollableArea {
           }
         }
       } else {
-        startIndex = direction === 1 ? index : Math.max(0, index - nRows + 1);
+        if (direction === 1) {
+          startIndex = index;
+        } else if (index - nRows + 1 <= 0) {
+          startIndex = 0;
+          direction = 1;
+        } else {
+          startIndex = index - nRows + 1;
+        }
       }
       changed = direction || changed;
       newScroll.rows = {

@@ -128,12 +128,12 @@ export class Layout extends Component {
     layout.calculatedZoom =
       (parent ? parent.calculatedZoom : 1) * (layout.zoom || 1);
     const resizeH =
-      !parent ||
+      parent &&
       (parent.display === "block" && index < parent.layouts.length - 1) ? (
         <div
           id={"layout-resize-handle-H: " + layout.id}
           style={{
-            width: width - (parent ? 0 : resizeHandleSize),
+            width: width - resizeHandleSize,
             height: resizeHandleSize,
             cursor: "row-resize"
           }}
@@ -142,7 +142,7 @@ export class Layout extends Component {
         />
       ) : null;
     const resizeV =
-      !parent ||
+      parent &&
       (parent.display === "flex" && index < parent.layouts.length - 1) ? (
         <div
           id={"layout-resize-handle-V: " + layout.id}
@@ -217,58 +217,54 @@ export class Layout extends Component {
             key={index}
             menu="layout-menu"
             component={"layout"}
+            className={classnames({
+              "zebulon-layout-header ": !isTab,
+              "zebulon-layout-header-active ":
+                !isTab && this.state.activeLayout === id,
+              "zebulon-layout-tab": isTab,
+              "zebulon-layout-tab-selected": isTab && layout.visible,
+              "zebulon-layout-tab-selected-active":
+                isTab && layout.visible && this.state.activeLayout === id
+            })}
+            draggable={this.state.layout.updatable}
+            style={{
+              textAlign: "center",
+              width: widthBody / layouts.length,
+              height: layout.titleHeight || titleHeight,
+              userSelect: "none"
+            }}
+            onClick={
+              isTab ? (
+                e => {
+                  e.stopPropagation();
+                  // e.preventDefault();
+                  if (
+                    this.state.selectedTabs[layout.parent.id] !== index ||
+                    this.state.activeLayout !== id
+                  ) {
+                    this.setState({
+                      selectedTabs: {
+                        ...this.state.selectedTabs,
+                        [layout.parent.id]: index
+                      },
+                      activeLayout: id
+                    });
+                  }
+                }
+              ) : (
+                e => {
+                  e.stopPropagation();
+                  // e.preventDefault();
+                  if (this.state.activeLayout !== id) {
+                    this.setState({
+                      activeLayout: id
+                    });
+                  }
+                }
+              )
+            }
           >
-            <div
-              id={"layout-title: " + id}
-              className={classnames({
-                "zebulon-layout-header ": !isTab,
-                "zebulon-layout-header-active ":
-                  !isTab && this.state.activeLayout === id,
-                "zebulon-layout-tab": isTab,
-                "zebulon-layout-tab-selected": isTab && layout.visible,
-                "zebulon-layout-tab-selected-active":
-                  isTab && layout.visible && this.state.activeLayout === id
-              })}
-              draggable={this.state.layout.updatable}
-              style={{
-                textAlign: "center",
-                width: widthBody / layouts.length,
-                height: layout.titleHeight || titleHeight,
-                userSelect: "none"
-              }}
-              onClick={
-                isTab ? (
-                  e => {
-                    e.stopPropagation();
-                    // e.preventDefault();
-                    if (
-                      this.state.selectedTabs[layout.parent.id] !== index ||
-                      this.state.activeLayout !== id
-                    ) {
-                      this.setState({
-                        selectedTabs: {
-                          ...this.state.selectedTabs,
-                          [layout.parent.id]: index
-                        },
-                        activeLayout: id
-                      });
-                    }
-                  }
-                ) : (
-                  e => {
-                    e.stopPropagation();
-                    // e.preventDefault();
-                    if (this.state.activeLayout !== id) {
-                      this.setState({
-                        activeLayout: id
-                      });
-                    }
-                  }
-                )
-              }
-            >
-              {layout.title}
-            </div>
+            {layout.title}
           </ContextualMenuClient>
         );
       });
@@ -312,9 +308,8 @@ export class Layout extends Component {
           key={index}
           menu="layout-menu"
           component={"layout"}
-        >
-          <div style={{ width: widthBody, height: heightBody }} />
-        </ContextualMenuClient>
+          style={{ width: widthBody, height: heightBody }}
+        />
       );
     }
 
@@ -323,8 +318,8 @@ export class Layout extends Component {
         id={"layout: " + layout.id}
         key={index}
         className={classnames({
-          "zebulon-layout": true,
-          "zebulon-layout-component": layout.id === "0"
+          "zebulon-layout": true
+          // "zebulon-layout-component": layout.id === "0"
         })}
         style={{
           ...style,
@@ -342,9 +337,10 @@ export class Layout extends Component {
           <div
             id={"layout-body: " + layout.id}
             className={classnames({
-              "zebulon-layout-body ": true,
-              "zebulon-layout-body-active ":
-                this.state.activeLayout === layout.id
+              "zebulon-layout-body ": true
+              // ,
+              // "zebulon-layout-body-active ":
+              //   this.state.activeLayout === layout.id
             })}
             style={{
               fontSize: `${(content ? layout.calculatedZoom : 1) * 100}%`,

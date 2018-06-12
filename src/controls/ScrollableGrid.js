@@ -229,7 +229,10 @@ export class ScrollableGrid extends ScrollableArea {
       } else {
         nextIndex =
           meta.visibleIndexes[
-            Math.max(0, meta.properties[index].visibleIndex_ - offset)
+            Math.max(
+              meta.visibleIndexes[0],
+              meta.properties[index].visibleIndex_ - offset
+            )
           ];
       }
     } else if (axis === AxisType.ROWS) {
@@ -248,9 +251,10 @@ export class ScrollableGrid extends ScrollableArea {
       axis === AxisType.COLUMNS
         ? meta.visibleIndexes[meta.visibleIndexes.length - 1]
         : (dataLength || data.length) - 1;
+    const first = axis === AxisType.COLUMNS ? meta.visibleIndexes[0] : 0;
     const offset =
       this.stopIndex[toAxis(axis)] - this.state.scroll[toAxis(axis)].startIndex;
-    return Math.max(0, Math.min(last, index + offset * direction));
+    return Math.max(first, Math.min(last, index + offset * direction));
   };
   lastIndex = (axis, direction) => {
     const { data, meta, dataLength } = this.props;

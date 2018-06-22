@@ -85,6 +85,7 @@ export class ContextualMenu extends Component {
 					item.level = level;
 					if (item.type === "jsx") {
 						return cloneElement(item.content, {
+							key: index,
 							keyEvent,
 							ref: ref => (this.element = ref)
 						});

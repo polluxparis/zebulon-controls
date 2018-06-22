@@ -467,6 +467,7 @@ export class ScrollableGrid extends ScrollableArea {
       shift = 0;
       const visibleHeight = height - this.scrollbars.horizontal.width2;
       const nRows = Math.ceil(visibleHeight / rowHeight);
+      const nCompleteRows = Math.floor(visibleHeight / rowHeight);
       // scroll event
       if (ix === null && positionRatio !== null) {
         startIndex = Math.round((dataLength || data.length) * positionRatio);
@@ -492,7 +493,7 @@ export class ScrollableGrid extends ScrollableArea {
       } else {
         if (direction === 1) {
           startIndex = index;
-        } else if (index - nRows + 1 <= 0) {
+        } else if (index - nCompleteRows + 1 <= 0) {
           startIndex = 0;
           direction = 1;
         } else {

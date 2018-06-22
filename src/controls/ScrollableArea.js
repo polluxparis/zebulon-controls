@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-import { ScrollbarSize } from "./constants";
+import { AxisType, ScrollbarSize } from "./constants";
 import { Scrollbar } from "./Scrollbar";
 // export const ScrollbarSize = 12;
 export class ScrollableArea extends Component {
@@ -76,6 +76,15 @@ export class ScrollableArea extends Component {
       30,
       height * ratios.vertical.display
     );
+    if (
+      this.scrollbars &&
+      !this.scrollbars.horizontal.width &&
+      scrollbars.horizontal.width &&
+      this.scrollOnKey
+    ) {
+      this.scrollbars = scrollbars;
+      this.scrollOnKey(this.selectedCell(), AxisType.ROWS, 1);
+    }
     this.scrollbars = scrollbars;
     return scrollbars;
   };

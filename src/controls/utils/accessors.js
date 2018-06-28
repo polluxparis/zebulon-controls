@@ -1,14 +1,5 @@
 import React from "react";
 import * as utils from "./generic";
-
-// import { utils } from "zebulon-controls";
-// import {
-// 	buildObject,
-// 	exportFunctions
-// 	// aggregations
-// } from "./utils/utils";
-// import { getFunction } from "./utils/compute.meta";
-// ({row})=>accessor('qty')({row})*3
 const sum = values => values.reduce((sum, value) => (sum += value), null);
 export const accessors = {
 	globals_: {

@@ -445,119 +445,24 @@ const functionsByObject = (object, functions) => {
   });
   return f_;
 };
-
-// export const mergeFunctions = (functions, object) => {
-//   const fg = {};
-//   const fl = {};
-//   (Array.isArray(functions)
-//     ? functions.filter(f => f !== undefined)
-//     : [functions || {}]).forEach(f => {
-//     if (f.globals_) {
-//       Object.keys(f.globals_).forEach(type => {
-//         Object.keys(f.globals_[type]).forEach(f_ => {
-//           fg["global" + "--" + type + "--" + f_] = f.globals_[type][f_];
-//         });
-//       });
-//     }
-//     if (f[object]) {
-//       Object.keys(f[object]).forEach(type => {
-//         Object.keys(f[object][type]).forEach(f_ => {
-//           if (f[object][type][f_]) {
-//             fl[object + "--" + type + "--" + f_] = f[object][type][f_];
-//             delete fg["global" + "--" + type + "--" + f_];
-//           }
-//         });
-//       });
-//     }
-//   });
-//   const fs = { ...fg, ...fl };
-//   const ft = Object.keys(fs).map(key => {
-//     const ks = key.split("--");
-//     return {
-//       id: ks[2],
-//       caption: ks[2],
-//       visibility: ks[0],
-//       tp: ks[1].slice(0, ks[1].length - 1),
-//       functionJS: typeof fs[key] === "string" ? undefined : fs[key],
-//       functionText: typeof fs[key] === "string" ? fs[key] : undefined,
-//       isLocal: typeof fs[key] === "string"
-//     };
-//   });
-//   const localFunctions = ft.filter(f => f.isLocal);
-//   const accessors = ft.reduce((acc, f) => {
-//     acc[f.id] = f.functionJS;
-//     return acc;
-//   }, {});
-//   const accessor = accessor => accessors[accessor];
-//   localFunctions.forEach(f => {
-//     // eval (b=message =>{try{ return (({row})=>row.m_qt)(message)} catch(e){return "error"}})
-//     const functionText =
-//       "message => {try{ return (" +
-//       f.functionText +
-//       ')(message)} catch (e){return "local function error"}}';
-//     try {
-//       eval("f.functionJS = " + functionText);
-//     } catch (e) {
-//       f.functionJS = () => {};
-//     }
-//     if (f.tp === "accessor") {
-//       accessors[f.id] = f.functionJS;
-//     }
-//   });
-//   return ft;
-//   // return ft.reduce((acc, f) => {
-//   //   acc[f.id] = f;
-//   //   return acc;
-//   // }, {});
-// };
-// export const functionsTable = functions => {
-//   if (functions === undefined) {
-//     return [];
-//   }
-//   // if(Array.isArray(functions){functionsTable(mergeFunctions)}
-//   return Object.keys(functions).reduce(
-//     (acc, object) => acc.concat(functionsByObject(object, functions)),
-//     []
-//   );
-// };
-// export const getFunction = (functions, type, value, utils) => {
-//   if (typeof value === "function") {
-//     return value;
-//   } else if (typeof value === "string") {
-//     const indexDot = value.indexOf(".");
-//     if (indexDot !== -1) {
-//       let v = value;
-//       if (value.slice(0, indexDot) === "row") {
-//         v = value.slice(indexDot + 1);
-//       }
-//       const keys = v.split(".");
-//       return ({ row }) => {
-//         return keys.reduce(
-//           (acc, key, index) =>
-//             acc[key] === undefined && index < keys.length - 1 ? {} : acc[key],
-//           row
-//         );
-//       };
-//     } else {
-//       const v =
-//         typeof value === "string"
-//           ? functions.find(f => f.id === value && f.tp === type)
-//           : [];
-
-//       if (v) {
-//         if (type === "accessor") {
-//           return message => v.functionJS({ ...message, utils });
-//         } else {
-//           return v.functionJS;
-//         }
-//       } else if (type === "format") {
-//         return ({ value: value_ }) => formatValue(value_, value);
-//       } else {
-//         return ({ row }) => row[value];
-//       }
-//     }
-//   }
-//   if (type === "format") {
-//     return ({ value }) => formatValue(value);
-//   }
-// };
+export const arrayToObject = (aa, k) => {
+  if (isNullOrUndefined(aa)) {
+    return {};
+  }
+  if (!Array.isArray(aa)) {
+    return aa;
+  }
+  return aa.reduce((acc, a) => {
+    acc[a[k]] = a;
+    return acc;
+  }, {});
+};
+export const objectToArray = oo => {
+  if (isNullOrUndefined(oo)) {
+    return [];
+  }
+  if (Array.isArray(oo)) {
+    return oo;
+  }
+  return Object.values(oo);
+};

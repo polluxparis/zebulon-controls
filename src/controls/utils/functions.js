@@ -188,7 +188,11 @@ export const functions = functionsObjects => {
     const functions = [];
     const getFunctions = (visibility, type, otherVisibilities = []) => {
       let keys = type ? [type] : Object.keys(functionsObject[visibility] || {});
-      if (keys && (!type || functionsObject[visibility][type])) {
+      if (
+        keys &&
+        (!type ||
+          (functionsObject[visibility] && functionsObject[visibility][type]))
+      ) {
         keys.forEach(type => {
           (Object.keys(functionsObject[visibility][type]) || [])
             .forEach(name => {

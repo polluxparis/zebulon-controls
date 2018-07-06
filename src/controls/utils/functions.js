@@ -74,6 +74,7 @@ export const functions = functionsObjects => {
   };
   //
   const initKey = (visibility, type, name) => {
+    let f = {};
     if (!functionsObject[visibility]) {
       functionsObject[visibility] = {};
     }
@@ -82,7 +83,10 @@ export const functions = functionsObjects => {
     }
     if (!functionsObject[visibility][type][name]) {
       functionsObject[visibility][type][name] = {};
+    } else {
+      f = functionsObject[visibility][type][name];
     }
+    return f;
   };
 
   const getInitialFunction = (visibility, type, name) =>
@@ -145,20 +149,24 @@ export const functions = functionsObjects => {
     }
   };
   const setInitialFunction = (visibility, type, name, caption, f0) => {
-    initKey(visibility, type, name);
-    let f = f0,
-      fText;
-    if (typeof f === "string") {
-      fText = f;
-      f = evalProtectedFunction(f);
+    const f_ = initKey(visibility, type, name);
+    if (f0 !== f_.f0) {
+      let f = f0,
+        fText;
+      if (typeof f === "string") {
+        fText = f;
+        f = evalProtectedFunction(f);
+      }
+      functionsObject[visibility][type][name] = {
+        f0: f,
+        f,
+        fText,
+        caption: caption || name
+      };
+      return f;
+    } else {
+      return f_.f;
     }
-    functionsObject[visibility][type][name] = {
-      f0: f,
-      f,
-      fText,
-      caption: caption || name
-    };
-    return f;
   };
   const setFunction = (visibility, type, name, f) => {
     initKey(visibility, type, name);
@@ -246,6 +254,7 @@ export const functions = functionsObjects => {
     composeFunction,
     removeFunction,
     getFunctionsArray,
+    getFunctionsObject: () => functionsObject,
     setVisibility: visibility => (currentVisibility = visibility),
     setSource: source => (currentSource = source)
   };

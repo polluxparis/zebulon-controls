@@ -217,7 +217,8 @@ export class Input extends Component {
       tabIndex,
       id,
       menu,
-      component
+      component,
+      setRef
     } = this.props;
     let input;
     let value = this.state.formatedValue;
@@ -316,7 +317,12 @@ export class Input extends Component {
             onFocus={onMouseDown}
             onMouseUp={onMouseUp}
             tabIndex={tabIndex}
-            ref={ref => (this.input = ref)}
+            ref={ref => {
+              this.input = ref;
+              if (setRef) {
+                setRef(ref);
+              }
+            }}
           />
         );
       } else {

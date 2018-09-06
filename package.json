@@ -10,10 +10,7 @@
   ],
   "author": "Thomas Bres <thomas.bres@pollux.paris>",
   "main": "lib/index.js",
-  "dependencies": {
-    "classnames": "^2.2.5",
-    "react": "^16.3.2"
-  },
+  "dependencies": {},
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",

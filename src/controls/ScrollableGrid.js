@@ -229,10 +229,7 @@ export class ScrollableGrid extends ScrollableArea {
       } else {
         nextIndex =
           meta.visibleIndexes[
-            Math.max(
-              meta.visibleIndexes[0],
-              meta.properties[index].visibleIndex_ - offset
-            )
+            Math.max(0, meta.properties[index].visibleIndex_ - offset)
           ];
       }
     } else if (axis === AxisType.ROWS) {

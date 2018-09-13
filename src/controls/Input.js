@@ -5,7 +5,8 @@ import {
   stringToDate,
   numberToString,
   isNullOrUndefined,
-  isPromise
+  isPromise,
+  isMap
 } from "./utils/generic";
 import { ContextualMenuClient } from "./ContextualMenu";
 
@@ -36,30 +37,41 @@ export class Input extends Component {
       dataType: props.dataType,
       id: props.id,
       index_: 0,
-      caption: props.label
+      caption: props.label,
+      selectItems: props.select
     };
-    let value = props.value;
+    const value =
+      this.column.selectItems && typeof props.value === "object"
+        ? props.value
+        : {
+            value: props.value,
+            caption: formatValue(props, props.value, props.focused)
+          };
     this.state = {
       value,
-      formatedValue: formatValue(props, value, props.focused),
       loaded: true,
-      focused: props.focused
+      focused: props.focused,
+      options: []
     };
     // this.focused = props.focused;
-    if (props.select && props.editable && props.focused) {
-      let options = props.select;
-      if (typeof options === "function") {
-        options = options(props.row);
-      }
-      if (isPromise(options)) {
-        this.state.options = [];
-        options.then(options => {
-          this.setState({ options });
-        });
-      } else {
-        this.state.options = options;
-      }
+    const options = this.getOptions(this.column, this.props);
+    if (options) {
+      this.state.options = options;
     }
+    // if (props.select && props.editable && props.focused) {
+    //   let options = props.select;
+    //   if (typeof options === "function") {
+    //     options = options(props.row);
+    //   }
+    //   if (isPromise(options)) {
+    //     this.state.options = [];
+    //     options.then(options => {
+    //       this.setState({ options });
+    //     });
+    //   } else {
+    //     this.state.options = options;
+    //   }
+    // }
   }
   componentWillReceiveProps(nextProps) {
     this.column = nextProps.column || {
@@ -73,29 +85,70 @@ export class Input extends Component {
       nextProps.value !== this.state.value ||
       nextProps.focused !== this.state.focused
     ) {
+      const value =
+        this.column.selectItems && typeof nextProps.value === "object"
+          ? nextProps.value
+          : {
+              value: nextProps.value,
+              caption: formatValue(
+                nextProps,
+                nextProps.value,
+                nextProps.focused
+              )
+            };
       this.setState({
-        value: nextProps.value,
-        formatedValue: formatValue(
-          nextProps,
-          nextProps.value,
-          nextProps.focused
-        ),
+        value,
         focused: nextProps.focused
       });
     }
     // this.focused = nextProps.focused;
-    const options = nextProps.select;
+    const options = this.getOptions(this.column, nextProps);
     if (options) {
-      if (isPromise(options)) {
-        this.setState.options = [];
-        options.then(options => {
-          this.setState({ options });
-        });
-      } else {
-        this.setState({ options });
-      }
+      this.setState({ options });
     }
+    // const options = nextProps.select;
+    // if (options) {
+    //   if (isPromise(options)) {
+    //     this.setState.options = [];
+    //     options.then(options => {
+    //       this.setState({ options });
+    //     });
+    //   } else {
+    //     this.setState({ options });
+    //   }
+    // }
   }
+  getOptions = (column, props) => {
+    let options = column.selectItems;
+    if (props.select && props.editable && props.focused) {
+      if (typeof options === "function") {
+        options = options(props.row);
+      }
+      if (isMap(options)) {
+        options = Array.from(options).map(option => ({
+          id: option[0],
+          caption: option[1]
+        }));
+      } else if (Array.isArray(options)) {
+        options = options.map(option => {
+          if (typeof option === "object") {
+            return option;
+          } else {
+            return {
+              id: option,
+              caption: option
+            };
+          }
+        });
+      } else if (isPromise(options)) {
+        options.then(options => {
+          props.select = options;
+          this.setState({ options: this.getOptions(column, props) });
+        });
+      }
+      return options;
+    }
+  };
   validateInput = value => {
     let v = value;
     const dataType = this.column.dataType;
@@ -129,58 +182,88 @@ export class Input extends Component {
     const column = this.column;
     const { dataType, format } = column || { dataType: this.props.dataType };
     if (editable) {
-      let value = e.target.value,
-        validatedValue;
-      if (!this.validateInput(value)) return;
-      // selection of an object
-      if (column.reference && column.selectItems) {
-        validatedValue = column.selectItems[e.target.value] || {};
+      if (!this.validateInput(e.target.value)) return;
+      const value = { caption: e.target.value, value: e.target.value };
+      if (column.selectItems) {
+        // value.value = this.state.options[e.target.value].id;
+        // value.caption = this.state.options[e.target.value].caption;
       } else if (dataType === "boolean") {
-        if (inputType === "filter" && this.state.value === false)
-          validatedValue = null;
+        // ??
+        if (inputType === "filter" && this.state.value.value === false)
+          value.value = null;
         else {
-          validatedValue = !this.state.value;
-          value = validatedValue;
+          value.value = !this.state.value.value;
+          // value = validatedValue;
           if (inputType !== "filter" && !this.props.focused) {
             onMouseDown(e);
           }
         }
       } else if (dataType === "date") {
-        validatedValue = stringToDate(value, format);
+        value.value = stringToDate(value.caption, format);
       } else if (dataType === "number") {
-        validatedValue = value === "" ? null : Number(value);
-        if (isNaN(validatedValue)) {
-          validatedValue = null;
+        value.value = value.caption === "" ? null : Number(value.caption);
+        if (isNaN(value.value)) {
+          value.value = null;
         }
-      } else {
-        validatedValue = value;
       }
+
+      // let value = e.target.value,
+      //   validatedValue;
+      // if (!this.validateInput(value)) return;
+      // // selection of an object
+      // if (column.selectItems) {
+      //   validatedValue = this.state.options[e.target.value] || {};
+      //   value = validatedValue.caption;
+      //   validatedValue = validatedValue.id;
+      // } else if (dataType === "boolean") {
+      //   if (inputType === "filter" && this.state.value === false)
+      //     validatedValue = null;
+      //   else {
+      //     validatedValue = !this.state.value;
+      //     value = validatedValue;
+      //     if (inputType !== "filter" && !this.props.focused) {
+      //       onMouseDown(e);
+      //     }
+      //   }
+      // } else if (dataType === "date") {
+      //   validatedValue = stringToDate(value, format);
+      // } else if (dataType === "number") {
+      //   validatedValue = value === "" ? null : Number(value);
+      //   if (isNaN(validatedValue)) {
+      //     validatedValue = null;
+      //   }
+      // } else {
+      //   validatedValue = value;
+      // }
       if (onChange) {
-        if (onChange(validatedValue, row, column, filterTo) === false) {
+        if (onChange({ value, row, column, filterTo }) === false) {
           return false;
         }
       }
-      if (row) {
-        const columnId =
-          column.reference && column.select ? column.reference : column.id;
-        row[columnId] = validatedValue;
-        if (
-          column.setForeignKeyAccessorFunction &&
-          column.reference &&
-          column.selectItems
-        ) {
-          column.setForeignKeyAccessorFunction({
-            value: validatedValue.pk_,
-            row
-          });
-        }
+      if (row && (column.foreignObject || !column.onChangeFunction)) {
+        // const columnId =
+        //   column.reference && column.select ? column.reference : column.id;
+        row[column.id] = value.value;
+        // if (
+        //   column.setForeignKeyAccessorFunction &&
+        //   column.reference &&
+        //   column.selectItems
+        // ) {
+        //   column.setForeignKeyAccessorFunction({
+        //     value: validatedValue.pk_,
+        //     row
+        //   });
+        // }
       }
-      this.setState({ formatedValue: value, value: validatedValue });
+      this.setState({ value });
     }
   };
   handleBlur = () => {
     this.setState({
-      formatedValue: formatValue(this.props, this.state.value, false)
+      value: {
+        ...this.state.value,
+        caption: formatValue(this.props, this.state.value.value, false)
+      }
     });
   };
   handleFocus = e => {
@@ -190,9 +273,9 @@ export class Input extends Component {
       onFocus(e, row, column);
       if (column.filterType !== "values") {
         // this.focused = true;
-        const formatedValue = formatValue(this.props, this.state.value, true);
+        const caption = formatValue(this.props, this.state.value.value, true);
         this.setState({
-          formatedValue,
+          value: { ...this.state.value, caption },
           focused: true
         });
       }
@@ -221,7 +304,7 @@ export class Input extends Component {
       setRef
     } = this.props;
     let input;
-    let value = this.state.formatedValue;
+    let value = this.state.value.caption;
     const column = this.column;
     const { dataType } = column;
     if (
@@ -260,38 +343,38 @@ export class Input extends Component {
       // label;
       let disabled = !editable || undefined;
       if (select) {
-        let options = this.state.options;
-        if (typeof options === "object") {
-          if (column.reference) {
-            value = column.primaryKeyAccessorFunction({ row });
-            options = Object.keys(options).map(key => ({
-              id: key,
-              caption: column.accessorFunction({
-                row: { [column.reference]: options[key] }
-              })
-            }));
-          } else {
-            options = Object.values(options);
-          }
-          options = [{ id: undefined, label: "" }].concat(options);
-        }
+        // let options = this.state.options;
+        // if (typeof options === "object") {
+        //   if (column.reference) {
+        //     value = column.primaryKeyAccessorFunction({ row });
+        //     options = Object.keys(options).map(key => ({
+        //       id: key,
+        //       caption: column.accessorFunction({
+        //         row: { [column.reference]: options[key] }
+        //       })
+        //     }));
+        //   } else {
+        //     options = Object.values(options);
+        //   }
+        //   options = [{ id: undefined, label: "" }].concat(options);
+        // }
         input = (
           <select
             id={id}
             key={id}
             className={className || "zebulon-input zebulon-input-select"}
             onChange={this.handleChange}
-            value={value}
+            value={this.state.value.value}
             style={innerStyle}
             autoFocus={hasFocus}
             onFocus={this.handleFocus}
             ref={ref => (this.input = ref)}
           >
-            {options.map((item, index) => {
+            {this.state.options.map((item, index) => {
               return (
                 <option
                   key={index}
-                  value={typeof item === "object" ? item.id : item}
+                  value={item.id}
                   style={typeof item === "object" ? item.style || {} : {}}
                 >
                   {typeof item === "object" ? item.caption : item}
@@ -326,7 +409,7 @@ export class Input extends Component {
           />
         );
       } else {
-        // let value = this.state.formatedValue;
+        // let value = this.state.caption;
         if (isNullOrUndefined(value) || value === "") {
           value = "";
         }
@@ -339,7 +422,11 @@ export class Input extends Component {
             autoFocus={hasFocus && inputType !== "filter"}
             style={innerStyle}
             value={
-              hasFocus && inputType === "filter" ? this.state.value : value
+              hasFocus && inputType === "filter" ? (
+                this.state.value.value
+              ) : (
+                value
+              )
             }
             disabled={disabled}
             onChange={this.handleChange}

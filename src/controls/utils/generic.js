@@ -3,6 +3,14 @@
  * @param  {object}  obj
  * @return {Boolean}
  */
+export function isMap(obj) {
+  return Object.prototype.toString.apply(obj) === "[object Map]";
+}
+/**
+ * Returns whether or not obj is a number
+ * @param  {object}  obj
+ * @return {Boolean}
+ */
 export function isNumber(obj) {
   return Object.prototype.toString.apply(obj) === "[object Number]";
 }

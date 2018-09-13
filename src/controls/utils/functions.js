@@ -122,16 +122,23 @@ export const functions = functionsObjects => {
       if (indexDot !== -1) {
         // row accessor
         let v = name;
-        if (name.slice(0, indexDot) === "row") {
-          v = name.slice(indexDot + 1);
+        const object = name.slice(0, indexDot);
+        // if (name.slice(0, indexDot) === "row") {
+        v = name.slice(indexDot + 1);
+        // }
+        if (object === "row") {
+          const keys = v.split(".");
+          return ({ row }) =>
+            keys.reduce(
+              (acc, key, index) =>
+                acc[key] === undefined && index < keys.length - 1
+                  ? {}
+                  : acc[key],
+              row
+            );
+        } else {
+          return getFunction(visibility, type, name, currentSource)(object);
         }
-        const keys = v.split(".");
-        return ({ row }) =>
-          keys.reduce(
-            (acc, key, index) =>
-              acc[key] === undefined && index < keys.length - 1 ? {} : acc[key],
-            row
-          );
       } else {
         // function accessor
         const f = getFunction(visibility, type, name, currentSource);

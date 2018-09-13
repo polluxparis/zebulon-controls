@@ -43,7 +43,7 @@ class FilterValues extends ScrollableGrid {
             checked={filter[id] !== undefined}
             onChange={() => this.onClick(id, ix)}
           />
-          <div onClick={() => this.onClick(id, ix)}>{label}</div>
+          <label htmlFor={`checkbox ${index}`}>{label}</label>
         </div>
       );
       index++;
@@ -173,7 +173,7 @@ export class Filter extends Component {
             checked={this.state.checkAll}
             onChange={this.onChangeCheckAll}
           />
-          Select all
+          <label htmlFor={-1}>Select all</label>
           <FilterValues
             width={(this.props.style.width || 200) * 0.98}
             height={maxRows * rowHeight - 5}

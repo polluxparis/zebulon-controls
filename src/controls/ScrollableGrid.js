@@ -174,8 +174,8 @@ export class ScrollableGrid extends ScrollableArea {
     // console.log("scrollonkey", this.props.scroll, this.stopIndex);
     const axisRow =
       (axis === AxisType.ROWS || axis === null) &&
-      this.scrollbars &&
-      this.scrollbars["vertical"].width &&
+      // this.scrollbars &&
+      // this.scrollbars["vertical"].width &&
       ((direction === 1 &&
         cell[toAxis(AxisType.ROWS)] >=
           Math.min(dataLength - 1, this.stopIndex[toAxis(AxisType.ROWS)])) ||

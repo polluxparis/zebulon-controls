@@ -124,27 +124,33 @@ export class Input extends Component {
       if (typeof options === "function") {
         options = options(props.row);
       }
+
       if (isMap(options)) {
         options = Array.from(options).map(option => ({
           id: option[0],
           caption: option[1]
         }));
-      } else if (Array.isArray(options)) {
-        options = options.map(option => {
-          if (typeof option === "object") {
-            return option;
-          } else {
-            return {
-              id: option,
-              caption: option
-            };
-          }
-        });
       } else if (isPromise(options)) {
         options.then(options => {
           props.select = options;
           this.setState({ options: this.getOptions(column, props) });
         });
+      } else {
+        if (!Array.isArray(options) && typeof options === "object") {
+          options = Object.values(options);
+        }
+        if (Array.isArray(options)) {
+          options = options.map(option => {
+            if (typeof option === "object") {
+              return option;
+            } else {
+              return {
+                id: option,
+                caption: option
+              };
+            }
+          });
+        }
       }
       return options;
     }
@@ -394,7 +400,7 @@ export class Input extends Component {
             key={id}
             autoFocus={hasFocus}
             style={innerStyle}
-            checked={this.state.value || false}
+            checked={this.state.value.value || false}
             disabled={false}
             onChange={this.handleChange}
             onFocus={onMouseDown}

@@ -30,7 +30,7 @@ class FilterValues extends ScrollableGrid {
     const { filter, rowCount, height, rowHeight } = this.props;
     while (index < rowCount && i < height / rowHeight) {
       const { id, label } = this.props.data[index];
-      const style = { height: rowHeight, width: "inherit", display: "flex" };
+      const style = { height: rowHeight, width: "inherit", display: "block" };
       if (index === this.state.selectedRange.end.rows) {
         style.backgroundColor = "aliceblue";
       }

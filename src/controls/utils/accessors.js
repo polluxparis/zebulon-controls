@@ -4,7 +4,11 @@ const sum = values => values.reduce((sum, value) => (sum += value), null);
 export const accessors = {
 	globals_: {
 		formats: {
-			decimals: ({ value, decimals, column }) =>
+			// integer with no separator
+			integer: ({ value, column }) =>
+				utils.formatValue(value, "String", 0),
+			//  decimal local string
+			decimal: ({ value, decimals, column }) =>
 				utils.formatValue(
 					value,
 					null,

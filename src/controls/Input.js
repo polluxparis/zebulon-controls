@@ -107,21 +107,10 @@ export class Input extends Component {
     if (options) {
       this.setState({ options });
     }
-    // const options = nextProps.select;
-    // if (options) {
-    //   if (isPromise(options)) {
-    //     this.setState.options = [];
-    //     options.then(options => {
-    //       this.setState({ options });
-    //     });
-    //   } else {
-    //     this.setState({ options });
-    //   }
-    // }
   }
-  shouldComponentUpdate(nextProps) {
-    return !(nextProps.focused && this.props.focused);
-  }
+  // shouldComponentUpdate(nextProps) {
+  //   return !(nextProps.focused && this.props.focused);
+  // }
   getOptions = (column, props) => {
     let options = column.selectItems;
     if (props.select && props.editable && props.focused) {

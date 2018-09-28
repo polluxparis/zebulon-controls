@@ -101,6 +101,7 @@ export class Input extends Component {
         focused: nextProps.focused
       });
     }
+
     // this.focused = nextProps.focused;
     const options = this.getOptions(this.column, nextProps);
     if (options) {
@@ -117,6 +118,9 @@ export class Input extends Component {
     //     this.setState({ options });
     //   }
     // }
+  }
+  shouldComponentUpdate(nextProps) {
+    return !(nextProps.focused && this.props.focused);
   }
   getOptions = (column, props) => {
     let options = column.selectItems;
@@ -175,7 +179,6 @@ export class Input extends Component {
     }
     return true;
   };
-
   handleChange = e => {
     const {
       row,
@@ -188,16 +191,16 @@ export class Input extends Component {
     const column = this.column;
     const { dataType, format } = column || { dataType: this.props.dataType };
     if (editable) {
-      if (!this.validateInput(e.target.value)) return;
+      if (!this.validateInput(e.target.value)) {
+        return;
+      }
       const value = { caption: e.target.value, value: e.target.value };
       if (column.selectItems) {
-        // value.value = this.state.options[e.target.value].id;
-        // value.caption = this.state.options[e.target.value].caption;
       } else if (dataType === "boolean") {
         // ??
-        if (inputType === "filter" && this.state.value.value === false)
+        if (inputType === "filter" && this.state.value.value === false) {
           value.value = null;
-        else {
+        } else {
           value.value = !this.state.value.value;
           // value = validatedValue;
           if (inputType !== "filter" && !this.props.focused) {
@@ -212,54 +215,13 @@ export class Input extends Component {
           value.value = null;
         }
       }
-
-      // let value = e.target.value,
-      //   validatedValue;
-      // if (!this.validateInput(value)) return;
-      // // selection of an object
-      // if (column.selectItems) {
-      //   validatedValue = this.state.options[e.target.value] || {};
-      //   value = validatedValue.caption;
-      //   validatedValue = validatedValue.id;
-      // } else if (dataType === "boolean") {
-      //   if (inputType === "filter" && this.state.value === false)
-      //     validatedValue = null;
-      //   else {
-      //     validatedValue = !this.state.value;
-      //     value = validatedValue;
-      //     if (inputType !== "filter" && !this.props.focused) {
-      //       onMouseDown(e);
-      //     }
-      //   }
-      // } else if (dataType === "date") {
-      //   validatedValue = stringToDate(value, format);
-      // } else if (dataType === "number") {
-      //   validatedValue = value === "" ? null : Number(value);
-      //   if (isNaN(validatedValue)) {
-      //     validatedValue = null;
-      //   }
-      // } else {
-      //   validatedValue = value;
-      // }
       if (onChange) {
         if (onChange({ value, row, column, filterTo }) === false) {
           return false;
         }
       }
       if (row && (column.foreignObject || !column.onChangeFunction)) {
-        // const columnId =
-        //   column.reference && column.select ? column.reference : column.id;
         row[column.id] = value.value;
-        // if (
-        //   column.setForeignKeyAccessorFunction &&
-        //   column.reference &&
-        //   column.selectItems
-        // ) {
-        //   column.setForeignKeyAccessorFunction({
-        //     value: validatedValue.pk_,
-        //     row
-        //   });
-        // }
       }
       this.setState({ value });
     }

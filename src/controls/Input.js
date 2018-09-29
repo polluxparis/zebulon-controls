@@ -115,16 +115,29 @@ export class Input extends Component {
     } = this.props;
     const column = this.column;
     const value = this.state.value;
+    const {handlechange,handleBlur,handleFocus} = this;
     let element = null;
     if (!(editable && hasFocus) && column.datatype !== "boolean") {
       element = this.state.value.caption || this.state.value.editedValue;
     } else if (column.datatype === "boolean") {
       // booleans are check box even when not editable
-      element = cloneElement(<CheckBoxInput />, { ...this.props, value });
+      element = cloneElement(<CheckBoxInput />, {
+        ...this.props,
+        value,
+        handlechange,hasFocus,handleBlur
+      });
     } else if (column.selectItems) {
-      element = cloneElement(<SelectInput />, { ...this.props, value });
+      element = cloneElement(<SelectInput />, {
+        ...this.props,
+        value,
+        handlechange,hasFocus,handleBlur
+      });
     } else {
-      element = cloneElement(<EditableInput />, { ...this.props, value });
+      element = cloneElement(<EditableInput />, {
+        ...this.props,
+        value,
+        handlechange,hasFocus,handleBlur
+      });
     }
     return (
       <ContextualMenuClient
@@ -140,7 +153,6 @@ export class Input extends Component {
         onDoubleClick={onDoubleClick}
         menu={menu}
         component={component}
-        handleChange={this.handleChange}
       >
         {element}
       </ContextualMenuClient>

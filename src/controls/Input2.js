@@ -126,7 +126,7 @@ export class SelectInput extends Component {
 		super(props);
 		const options = this.getOptions(props.column, props);
 		if (options) {
-			this.state.options = options;
+			this.state = { options };
 		}
 	}
 	componentWillReceiveProps(nextProps) {

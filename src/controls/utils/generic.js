@@ -22,6 +22,9 @@ export function isNumber(obj) {
 export function isDate(obj) {
   return Object.prototype.toString.apply(obj) === "[object Date]";
 }
+export function isObject(obj) {
+  return Object.prototype.toString.apply(obj) === "[object Object]";
+}
 /**
  * Returns whether or not obj is a string
  * @param  {object}  obj

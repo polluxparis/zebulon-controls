@@ -63,8 +63,8 @@ export class Input extends Component {
     );
   };
   handleChange = ({ value, row, column, filterTo }) => {
-    if (onChange) {
-      if (onChange({ value, row, column, filterTo }) === false) {
+    if (this.props.onChange) {
+      if (this.props.onChange({ value, row, column, filterTo }) === false) {
         return false;
       }
     }
@@ -115,7 +115,7 @@ export class Input extends Component {
     } = this.props;
     const column = this.column;
     const value = this.state.value;
-    const {handleChange,handleBlur,handleFocus} = this;
+    const { handleChange, handleBlur, handleFocus } = this;
     let element = null;
     if (!(editable && hasFocus) && column.datatype !== "boolean") {
       element = this.state.value.caption || this.state.value.editedValue;
@@ -124,19 +124,25 @@ export class Input extends Component {
       element = cloneElement(<CheckBoxInput />, {
         ...this.props,
         value,
-        handleChange,hasFocus,handleBlur
+        handleChange,
+        hasFocus,
+        handleBlur
       });
     } else if (column.selectItems) {
       element = cloneElement(<SelectInput />, {
         ...this.props,
         value,
-        handleChange,hasFocus,handleBlur
+        handleChange,
+        hasFocus,
+        handleBlur
       });
     } else {
       element = cloneElement(<EditableInput />, {
         ...this.props,
         value,
-        handleChange,hasFocus,handleBlur
+        handleChange,
+        hasFocus,
+        handleBlur
       });
     }
     return (

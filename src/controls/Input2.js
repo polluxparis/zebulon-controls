@@ -124,7 +124,7 @@ export class EditableInput extends Component {
 export class SelectInput extends Component {
 	constructor(props) {
 		super(props);
-		const options = this.getOptions(this.column, this.props);
+		const options = this.getOptions(props.column, props);
 		if (options) {
 			this.state.options = options;
 		}
@@ -136,7 +136,7 @@ export class SelectInput extends Component {
 			index_: 0,
 			caption: nextProps.label
 		};
-		const options = this.getOptions(this.column, nextProps);
+		const options = this.getOptions(nextProps.column, nextProps);
 		if (options) {
 			this.setState({ options });
 		}

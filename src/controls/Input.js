@@ -39,11 +39,16 @@ export class Input extends Component {
       if (isObject(nextProps.value)) {
         value = {
           ...nextProps.value,
-          editedValue: this.state.value.editedValue
+          editedValue: !nextProps.focused
+            ? undefined
+            : this.state.value.editedValue
         };
       } else {
         value.value = nextProps.value;
         value.caption = formatValue(nextProps, nextProps.value);
+        value.editedValue = !nextProps.focused
+          ? undefined
+          : this.state.value.editedValue;
       }
       this.setState({
         value,

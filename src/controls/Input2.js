@@ -32,18 +32,9 @@ export const validateInput = (value, dataType, validateInput) => {
 	}
 	return true;
 };
-export const formatValue = (props, value) => {
+export const formatValue = (props, value, focused) => {
 	// console.log(1);
-	const {
-		row,
-		column,
-		status,
-		params,
-		data,
-		inputType,
-		editable,
-		focused
-	} = props;
+	const { row, column, status, params, data, inputType, editable } = props;
 	const { dataType, formatFunction } = column || { dataType: props.dataType };
 	let v = isNullOrUndefined(value) ? "" : value;
 	if (
@@ -82,7 +73,7 @@ export class EditableInput extends Component {
 				value.value = null;
 			}
 		}
-		value.caption = formatValue(this.props, value.value);
+		value.caption = formatValue(this.props, value.value, true);
 		handleChange({ value, row, column, filterTo });
 	};
 	render() {
@@ -98,12 +89,14 @@ export class EditableInput extends Component {
 
 		const style = {
 			textAlign: this.props.style.textAlign,
-			width: "100%"
+			width: "100%",
+			padding: "unset",
+			border: "unset"
 		};
-		if (inputType === "filter") {
-			style.padding = ".4em";
-			style.height = "inherit";
-		}
+		// if (inputType === "filter") {
+		// 	style.padding = ".4em";
+		// 	style.height = "inherit";
+		// }
 		return (
 			<input
 				type="text"

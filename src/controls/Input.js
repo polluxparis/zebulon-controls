@@ -20,12 +20,11 @@ export class Input extends Component {
       ? props.value
       : {
           value: props.value,
-          caption: formatValue(props, props.value)
+          caption: formatValue(props, props.value, props.focused)
         };
     this.state = {
       value,
       loaded: true,
-      focused: props.focused,
       options: []
     };
   }
@@ -45,14 +44,17 @@ export class Input extends Component {
         };
       } else {
         value.value = nextProps.value;
-        value.caption = formatValue(nextProps, nextProps.value);
+        value.caption = formatValue(
+          nextProps,
+          nextProps.value,
+          nextProps.focused
+        );
         value.editedValue = !nextProps.focused
           ? undefined
           : this.state.value.editedValue;
       }
       this.setState({
-        value,
-        focused: nextProps.focused
+        value
       });
     }
   }
@@ -82,7 +84,7 @@ export class Input extends Component {
     this.setState({
       value: {
         ...this.state.value,
-        caption: formatValue(this.props, this.state.value.value),
+        caption: formatValue(this.props, this.state.value.value, false),
         editedValue: undefined
       }
     });
@@ -94,7 +96,7 @@ export class Input extends Component {
       onFocus(e, row, column);
       if (inputType === "filter") {
         if (column.filterType !== "values") {
-          const caption = formatValue(this.props, this.state.value.value);
+          const caption = formatValue(this.props, this.state.value.value, true);
           this.setState({
             value: { ...this.state.value, caption },
             focused: true
@@ -123,7 +125,11 @@ export class Input extends Component {
     const value = this.state.value;
     const { handleChange, handleBlur, handleFocus } = this;
     let element = null;
-    if (!(editable && hasFocus) && column.dataType !== "boolean") {
+    if (
+      !(editable && hasFocus) &&
+      column.dataType !== "boolean" &&
+      inputType !== "filter"
+    ) {
       element = this.state.value.caption || this.state.value.editedValue;
     } else if (column.dataType === "boolean") {
       // booleans are check box even when not editable
@@ -134,7 +140,7 @@ export class Input extends Component {
         handleFocus,
         handleBlur
       });
-    } else if (column.selectItems) {
+    } else if (column.selectItems && inputType !== "filter") {
       element = cloneElement(<SelectInput />, {
         ...this.props,
         value,

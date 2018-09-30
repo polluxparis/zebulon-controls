@@ -129,18 +129,18 @@ export class SelectInput extends Component {
 			this.state = { options };
 		}
 	}
-	componentWillReceiveProps(nextProps) {
-		this.column = nextProps.column || {
-			dataType: nextProps.dataType,
-			id: nextProps.id,
-			index_: 0,
-			caption: nextProps.label
-		};
-		const options = this.getOptions(nextProps.column, nextProps);
-		if (options) {
-			this.setState({ options });
-		}
-	}
+	// componentWillReceiveProps(nextProps) {
+	// 	this.column = nextProps.column || {
+	// 		dataType: nextProps.dataType,
+	// 		id: nextProps.id,
+	// 		index_: 0,
+	// 		caption: nextProps.label
+	// 	};
+	// 	const options = this.getOptions(nextProps.column, nextProps);
+	// 	if (options) {
+	// 		this.setState({ options });
+	// 	}
+	// }
 	getOptions = (column, props) => {
 		let options = column.selectItems;
 		if (typeof options === "function") {
@@ -179,39 +179,38 @@ export class SelectInput extends Component {
 		const { row, column, filterTo, handleChange, value } = this.props;
 		value.caption = e.target.value;
 		value.value = e.target.value;
+		// if(column.reference&&!column.onChange){}
 		handleChange({ value, row, column, filterTo });
 	};
 	render() {
-		const {
-			hasFocus,
-			handleFocus,
-			handleChange,
-			id,
-			className,
-			value
-		} = this.props;
+		const { hasFocus, handleFocus, id, className, value } = this.props;
+		const options = this.state.options.map((item, index) => {
+			let caption = item,
+				id = item,
+				style = {};
+			if (isObject(item)) {
+				caption = item.caption;
+				id = item.id;
+				style = item.style || {};
+			}
+			return (
+				<option key={index} value={id} style={style}>
+					{caption}
+				</option>
+			);
+		});
 		return (
 			<select
 				id={id}
 				key={id}
 				className={className || "zebulon-input zebulon-input-select"}
-				onChange={handleChange}
+				onChange={this.handleChange}
 				value={value.value}
 				onFocus={handleFocus}
 				autoFocus={hasFocus}
 				ref={ref => (this.input = ref)}
 			>
-				{this.state.options.map((item, index) => {
-					return (
-						<option
-							key={index}
-							value={item.id}
-							style={isObject(item) ? item.style || {} : {}}
-						>
-							{isObject(item) === "object" ? item.caption : item}
-						</option>
-					);
-				})}
+				{options}
 			</select>
 		);
 	}
@@ -243,7 +242,6 @@ export class CheckBoxInput extends Component {
 	render() {
 		const { hasFocus, id, className, value } = this.props;
 		const style = {
-			width: "100%",
 			margin: "unset",
 			padding: "unset"
 		};

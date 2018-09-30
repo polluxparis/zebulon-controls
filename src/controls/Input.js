@@ -77,7 +77,8 @@ export class Input extends Component {
     this.setState({
       value: {
         ...this.state.value,
-        caption: formatValue(this.props, this.state.value.value)
+        caption: formatValue(this.props, this.state.value.value),
+        editedValue: undefined
       }
     });
   };
@@ -117,15 +118,15 @@ export class Input extends Component {
     const value = this.state.value;
     const { handleChange, handleBlur, handleFocus } = this;
     let element = null;
-    if (!(editable && hasFocus) && column.datatype !== "boolean") {
+    if (!(editable && hasFocus) && column.dataType !== "boolean") {
       element = this.state.value.caption || this.state.value.editedValue;
-    } else if (column.datatype === "boolean") {
+    } else if (column.dataType === "boolean") {
       // booleans are check box even when not editable
       element = cloneElement(<CheckBoxInput />, {
         ...this.props,
         value,
         handleChange,
-        hasFocus,
+        handleFocus,
         handleBlur
       });
     } else if (column.selectItems) {
@@ -133,7 +134,7 @@ export class Input extends Component {
         ...this.props,
         value,
         handleChange,
-        hasFocus,
+        handleFocus,
         handleBlur
       });
     } else {
@@ -141,7 +142,7 @@ export class Input extends Component {
         ...this.props,
         value,
         handleChange,
-        hasFocus,
+        handleFocus,
         handleBlur
       });
     }

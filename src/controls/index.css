@@ -94,6 +94,14 @@
 	width: stretch;
 	cursor: pointer;
 }
+.zebulon-tabs-tab-horizontal {
+	border: 1px solid #aaa;
+	text-align: center;
+	border-radius: 0 0 5px 5px;
+	/*width: -webkit-fill-available;*/
+	width: stretch;
+	cursor: pointer;
+}
 .zebulon-tabs-tab-selected {
 	background-color: lightgrey;
 	border-bottom: unset;

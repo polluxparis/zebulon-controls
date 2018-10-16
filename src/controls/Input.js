@@ -75,25 +75,30 @@ export class Input extends Component {
         return false;
       }
     }
-    if (row && !column.onChangeFunction) {
-      row[column.id] = value.value;
-    }
+    // if (row) {
+    //   row[column.id] = value.value;
+    // }
     this.setState({ value });
   };
-  handleBlur = () => {
-    this.setState({
-      value: {
-        ...this.state.value,
-        caption: formatValue(this.props, this.state.value.value, false),
-        editedValue: undefined
-      }
-    });
-  };
+  // handleBlur = e => {
+  //   if (!this.noOnBlur) {
+  //     this.setState({
+  //       value: {
+  //         ...this.state.value,
+  //         caption: formatValue(this.props, this.state.value.value, false),
+  //         editedValue: undefined
+  //       }
+  //     });
+  //   }
+  //   this.noOnBlur = false;
+  // };
   handleFocus = e => {
     const { inputType, onFocus, row } = this.props;
     const column = this.column;
     if (onFocus) {
+      this.noOnBlur = true;
       onFocus(e, row, column);
+      this.noOnBlur = false;
       if (inputType === "filter") {
         if (column.filterType !== "values") {
           const caption = formatValue(this.props, this.state.value.value, true);
@@ -121,6 +126,7 @@ export class Input extends Component {
       inputType,
       hasFocus
     } = this.props;
+
     const column = this.column;
     const value = this.state.value;
     const { handleChange, handleBlur, handleFocus } = this;
@@ -149,6 +155,7 @@ export class Input extends Component {
         handleBlur
       });
     } else {
+      // this.noOnBlur = true;
       element = cloneElement(<EditableInput />, {
         ...this.props,
         value,

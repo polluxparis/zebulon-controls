@@ -84,10 +84,12 @@ export class EditableInput extends Component {
 			id,
 			className,
 			inputType,
-			value
+			value,
+			innerStyle
 		} = this.props;
 
 		const style = {
+			...innerStyle,
 			textAlign: this.props.style.textAlign,
 			width: "100%",
 			padding: "unset",
@@ -176,7 +178,14 @@ export class SelectInput extends Component {
 		handleChange({ value, row, column, filterTo });
 	};
 	render() {
-		const { hasFocus, handleFocus, id, className, value } = this.props;
+		const {
+			hasFocus,
+			handleFocus,
+			id,
+			className,
+			value,
+			innerStyle
+		} = this.props;
 		const options = this.state.options.map((item, index) => {
 			let caption = item,
 				id = item,
@@ -202,7 +211,7 @@ export class SelectInput extends Component {
 				onFocus={handleFocus}
 				autoFocus={hasFocus}
 				ref={ref => (this.input = ref)}
-				style={{ width: "inherit" }}
+				style={innerStyle}
 			>
 				{options}
 			</select>
@@ -234,8 +243,9 @@ export class CheckBoxInput extends Component {
 		handleChange({ value, row, column, filterTo });
 	};
 	render() {
-		const { hasFocus, id, className, value } = this.props;
+		const { hasFocus, id, className, value, innerStyle } = this.props;
 		const style = {
+			...innerStyle,
 			margin: "unset",
 			padding: "unset"
 		};

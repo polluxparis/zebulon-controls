@@ -6,6 +6,7 @@ import { accessors } from "./utils/accessors";
 
 export * from "./ContextualMenu";
 export * from "./Input";
+export * from "./Input2";
 export * from "./Filter";
 export * from "./ScrollableArea";
 export * from "./ScrollableGrid";

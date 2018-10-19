@@ -135,7 +135,7 @@ export class SelectInput extends Component {
 	// 	}
 	// }
 	getOptions = (column, props) => {
-		let options = column.selectItems;
+		let options = props.select;
 		if (typeof options === "function") {
 			options = options(props.row);
 		}
@@ -202,6 +202,7 @@ export class SelectInput extends Component {
 				onFocus={handleFocus}
 				autoFocus={hasFocus}
 				ref={ref => (this.input = ref)}
+				style={{ width: "inherit" }}
 			>
 				{options}
 			</select>

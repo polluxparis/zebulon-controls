@@ -87,6 +87,7 @@
 	justify-content: space-around;
 }
 .zebulon-tabs-tab {
+	font-weight: bold;
 	border: 1px solid #aaa;
 	text-align: center;
 	border-radius: 5px 5px 0 0;
@@ -95,10 +96,11 @@
 	cursor: pointer;
 }
 .zebulon-tabs-tab-horizontal {
+	font-weight: bold;
+	writing-mode: tb-rl;
 	border: 1px solid #aaa;
 	text-align: center;
 	border-radius: 0 0 5px 5px;
-	/*width: -webkit-fill-available;*/
 	width: stretch;
 	cursor: pointer;
 }

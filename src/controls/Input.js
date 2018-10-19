@@ -124,7 +124,9 @@ export class Input extends Component {
       component,
       editable,
       inputType,
-      hasFocus
+      hasFocus,
+      select,
+      dataType
     } = this.props;
 
     const column = this.column;
@@ -133,11 +135,11 @@ export class Input extends Component {
     let element = null;
     if (
       !(editable && hasFocus) &&
-      column.dataType !== "boolean" &&
+      dataType !== "boolean" &&
       inputType !== "filter"
     ) {
       element = this.state.value.caption || this.state.value.editedValue;
-    } else if (column.dataType === "boolean") {
+    } else if (dataType === "boolean") {
       // booleans are check box even when not editable
       element = cloneElement(<CheckBoxInput />, {
         ...this.props,
@@ -146,7 +148,7 @@ export class Input extends Component {
         handleFocus,
         handleBlur
       });
-    } else if (column.selectItems && inputType !== "filter") {
+    } else if (select && inputType !== "filter") {
       element = cloneElement(<SelectInput />, {
         ...this.props,
         value,

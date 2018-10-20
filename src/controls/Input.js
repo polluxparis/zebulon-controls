@@ -153,8 +153,7 @@ export class Input extends Component {
         value,
         handleChange,
         handleFocus,
-        handleBlur,
-        className: "unset"
+        handleBlur
       });
     } else {
       // this.noOnBlur = true;

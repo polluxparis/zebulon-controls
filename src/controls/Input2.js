@@ -187,6 +187,13 @@ export class SelectInput extends Component {
 			value,
 			innerStyle
 		} = this.props;
+		const style = {
+			...innerStyle,
+			width: "100%",
+			height: "100%",
+			padding: "unset",
+			border: "unset"
+		};
 		const options = this.state.options.map((item, index) => {
 			let caption = item,
 				id = item,
@@ -212,7 +219,7 @@ export class SelectInput extends Component {
 				onFocus={handleFocus}
 				autoFocus={hasFocus}
 				ref={ref => (this.input = ref)}
-				style={innerStyle}
+				style={style}
 			>
 				{options}
 			</select>

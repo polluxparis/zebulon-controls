@@ -92,6 +92,7 @@ export class EditableInput extends Component {
 			...innerStyle,
 			textAlign: this.props.style.textAlign,
 			width: "100%",
+			height: "100%",
 			padding: "unset",
 			border: "unset"
 		};

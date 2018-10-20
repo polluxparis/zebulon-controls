@@ -128,7 +128,6 @@ export class Input extends Component {
       select,
       dataType
     } = this.props;
-
     const column = this.column;
     const value = this.state.value;
     const { handleChange, handleBlur, handleFocus } = this;
@@ -154,7 +153,8 @@ export class Input extends Component {
         value,
         handleChange,
         handleFocus,
-        handleBlur
+        handleBlur,
+        className: ""
       });
     } else {
       // this.noOnBlur = true;

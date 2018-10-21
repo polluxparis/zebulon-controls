@@ -89,12 +89,12 @@ export class EditableInput extends Component {
 		} = this.props;
 
 		const style = {
-			...innerStyle,
 			textAlign: this.props.style.textAlign,
 			width: "100%",
 			height: "100%",
 			padding: "unset",
-			border: "unset"
+			border: "unset",
+			...innerStyle
 		};
 		// if (inputType === "filter") {
 		// 	style.padding = ".4em";
@@ -188,11 +188,11 @@ export class SelectInput extends Component {
 			innerStyle
 		} = this.props;
 		const style = {
-			...innerStyle,
 			width: "100%",
 			height: "100%",
 			padding: "unset",
-			border: "unset"
+			border: "unset",
+			...innerStyle
 		};
 		const options = this.state.options.map((item, index) => {
 			let caption = item,
@@ -253,9 +253,9 @@ export class CheckBoxInput extends Component {
 	render() {
 		const { hasFocus, id, className, value, innerStyle } = this.props;
 		const style = {
-			...innerStyle,
 			margin: "unset",
-			padding: "unset"
+			padding: "unset",
+			...innerStyle
 		};
 		return (
 			<input

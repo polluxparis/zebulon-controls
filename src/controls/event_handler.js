@@ -20,8 +20,8 @@ export class EventHandler extends Component {
         document.addEventListener("paste", this.handleKeyEvent);
         document.addEventListener("keydown", this.handleKeyEvent);
       }
-      if (this.props.component.getComponent) {
-        this.props.component.getComponent(this.props.component);
+      if (this.props.component.props.getComponent) {
+        this.props.component.props.getComponent(this.props.component);
       }
     }
   }

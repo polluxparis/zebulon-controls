@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 
 import { AxisType, ScrollbarSize } from "./constants";
-import { Scrollbar } from "./Scrollbar";
+import { Scrollbar } from "./scrollbar";
 // export const ScrollbarSize = 12;
 export class ScrollableArea extends Component {
   constructor(props) {

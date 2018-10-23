@@ -1,5 +1,5 @@
 import React, { cloneElement } from "react";
-import { ScrollableArea } from "./ScrollableArea";
+import { ScrollableArea } from "./scrollable_area";
 import { AxisType, toAxis, ScrollbarSize } from "./constants";
 import { isEmpty, isNullOrUndefined, keyMap } from "./utils/generic";
 export class ScrollableGrid extends ScrollableArea {

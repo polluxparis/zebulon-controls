@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { ContextualMenuClient } from "./ContextualMenu";
+import { ContextualMenuClient } from "./contextual_menu";
 import {
 	isObject,
 	isNullOrUndefined,

@@ -233,7 +233,7 @@ export class ConfirmationModal extends React.Component {
 		}
 		return (
 			<div
-				className="backdrop zebulon-modal-backdrop-invisible"
+				className="backdrop zebulon-modal-backdrop"
 				style={{ zIndex: 4 }}
 			>
 				<div

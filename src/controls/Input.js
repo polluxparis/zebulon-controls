@@ -1,12 +1,12 @@
 import React, { Component, cloneElement } from "react";
 import { isObject } from "./utils/generic";
-import { ContextualMenuClient } from "./ContextualMenu";
+import { ContextualMenuClient } from "./contextual_menu";
 import {
   EditableInput,
   SelectInput,
   CheckBoxInput,
   formatValue
-} from "./Input2";
+} from "./input_type";
 // 3 values are managed {value,caption,editedValue}
 // value is an id or the resulting value (as a date,number...}
 // caption is the label corresponding to the id or the formated value

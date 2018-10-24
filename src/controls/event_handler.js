@@ -63,7 +63,7 @@ export class EventHandler extends Component {
   render() {
     // pivot grid
     let div = (
-      <div id="event-handler" onClick={this.onClick}>
+      <div id={this.props.id || "event-handler"} onClick={this.onClick}>
         {this.props.children}
       </div>
     );

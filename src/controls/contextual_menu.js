@@ -149,7 +149,9 @@ export class ContextualMenu extends Component {
 		}
 	};
 	close = () => {
-		this.setState({ menu: null });
+		if (this.state.menu) {
+			this.setState({ menu: null });
+		}
 		this.openedLevel = {};
 		this.hoveredItem = {};
 	};

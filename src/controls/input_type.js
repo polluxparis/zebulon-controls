@@ -242,7 +242,7 @@ export class CheckBoxInput extends Component {
 		} = this.props;
 		if (inputType === "filter" && value.value === false) {
 			value.value = null;
-		} else if (this.props.focused||inputType !== "filter) {
+		} else if (this.props.focused || inputType !== "filter") {
 			value.value = !value.value;
 			// if (inputType !== "filter" && !this.props.focused) {
 			// 	onMouseDown(e);

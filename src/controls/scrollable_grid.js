@@ -684,7 +684,7 @@ export class ScrollableGrid extends ScrollableArea {
     return (
       <div
         style={{
-          position: "absolute",
+          // position: "absolute",
           top: this.state.scroll.rows.shift,
           width: "inherit",
           height: "inherit"

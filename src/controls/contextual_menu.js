@@ -231,7 +231,7 @@ export class ContextualMenu extends Component {
 		// if (this.element) {
 		// 	console.log("keydown menu event1", e.key, this.element.values);
 		// }
-		if (this.state.menu.visible) {
+		if (this.state.menu && this.state.menu.visible) {
 			// escape
 			if (e.which === 27) {
 				e.preventDefault();

@@ -134,11 +134,11 @@ export class Input extends Component {
     let element = null;
     if (
       !(editable && hasFocus) &&
-      dataType !== "boolean" &&
+      column.dataType !== "boolean" &&
       inputType !== "filter"
     ) {
       element = this.state.value.caption || this.state.value.editedValue;
-    } else if (dataType === "boolean") {
+    } else if (column.dataType === "boolean") {
       // booleans are check box even when not editable
       element = cloneElement(<CheckBoxInput />, {
         ...this.props,

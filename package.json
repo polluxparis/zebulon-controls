@@ -18,12 +18,17 @@
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "compile": "npm run compile:js &&npm run compile:css",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "browserslist": [
     ">0.2%",
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "devDependencies": {
+    "gh-pages": "^2.0.1"
+  }
 }

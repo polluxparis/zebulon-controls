@@ -10,7 +10,9 @@
   ],
   "author": "Thomas Bres <thomas.bres@pollux.paris>",
   "main": "lib/index.js",
-  "dependencies": {},
+  "dependencies": {
+    "react-resizable": "^1.7.5"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",

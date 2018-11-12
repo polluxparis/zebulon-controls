@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { ScrollableGrid } from "./scrollable_grid";
 import { ScrollbarSize } from "./constants";
+import { ResizableBox } from "react-resizable";
 class FilterValues extends ScrollableGrid {
   componentDidUpdate() {
     if (this.focusedIndex !== undefined) {
@@ -56,6 +57,39 @@ class FilterValues extends ScrollableGrid {
     );
   };
 }
+const ResizableFilter = props => {
+  if (props.resizable) {
+    return (
+      <ResizableBox
+        id="filter"
+        height={props.height}
+        width={props.width}
+        style={{
+          ...props.style,
+          height: props.height,
+          width: props.width
+        }}
+        // onWheel={props.onWheel}
+        onResize={props.onResize}
+      >
+        {props.children}
+      </ResizableBox>
+    );
+  } else {
+    return (
+      <div
+        id="filter"
+        style={{
+          ...props.style,
+          height: "fit-content"
+        }}
+        // onWheel={props.onWheel}
+      >
+        {props.children}
+      </div>
+    );
+  }
+};
 
 export class Filter extends Component {
   constructor(props) {
@@ -66,7 +100,9 @@ export class Filter extends Component {
       rowCount: props.items.length,
       checkAll: false,
       maxRows: props.maxRows || 10,
-      rowHeight: props.rowHeight || 20
+      rowHeight: props.rowHeight || 20,
+      width: (props.style.width || 200) * 0.98,
+      height: (props.maxRows || 10) * (props.rowHeight || 20) - 5
     };
   }
   componentWillReceiveProps(nextProps) {
@@ -99,6 +135,17 @@ export class Filter extends Component {
       changed: !this.state.changed
     });
   };
+  componentDidMount = () => {
+    this._isMounted = true;
+    if (this.props.resizable || this.props.resizable === undefined) {
+      // const element= document.getElementById("filter");
+      this.setState({
+        filterHeight: document.getElementById("filter").getBoundingClientRect()
+          .height
+      });
+    }
+  };
+
   onChangeCheck = (id, index) => {
     const filter = this.state.filter;
     const checked = filter[id] === undefined;
@@ -137,16 +184,33 @@ export class Filter extends Component {
         : this.state.filter;
     this.props.onOk(filter);
   };
+  onResize = (e, data) => {
+    const newState = {
+      height: this.state.height + (data.size.height - this.state.filterHeight),
+      filterHeight: data.size.height,
+      width: data.size.width
+    };
+    console.log(1, this.state, newState, data.size);
+    this.setState(newState);
+  };
   render() {
     const { maxRows, rowHeight } = this.state;
     return (
-      <div
+      <ResizableFilter
         id="filter"
         style={{
           ...this.props.style,
           height: "fit-content"
         }}
-        onWheel={this.onWheel}
+        resizable={
+          this._isMounted &&
+          (this.props.resizable || this.props.resizable === undefined)
+        }
+        height={this.state.filterHeight}
+        width={this.state.width}
+        onResize={(e, data) => {
+          this.onResize(e, data);
+        }}
       >
         <div style={{ textAlign: "center" }}>
           {this.props.title || "Filter"}
@@ -157,7 +221,6 @@ export class Filter extends Component {
             style={{
               width: "94%",
               margin: "2%",
-              placeholder: "toto",
               textAlign: "left"
             }}
             autoFocus={true}
@@ -175,10 +238,10 @@ export class Filter extends Component {
           />
           <label htmlFor={-1}>Select all</label>
           <FilterValues
-            width={(this.props.style.width || 200) * 0.98}
-            height={maxRows * rowHeight - 5}
+            width={this.state.width}
+            height={this.state.height}
             style={{
-              width: (this.props.style.width || 200) * 0.98,
+              width: this.state.width,
               justifyContent: "space-between",
               borderTop: "solid 0.02em rgba(0, 0, 0, 0.3)",
               marginTop: 5
@@ -195,7 +258,7 @@ export class Filter extends Component {
         <button style={{ width: "96%", margin: "2%" }} onClick={this.onOk}>
           Apply filter
         </button>
-      </div>
+      </ResizableFilter>
     );
   }
 }

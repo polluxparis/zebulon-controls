@@ -110,7 +110,10 @@ export class EditableInput extends Component {
 				onFocus={handleFocus}
 				// onBlur={handleBlur}
 				style={style}
-				value={value.caption || value.editedValue}
+				value={
+					value.caption ||
+					(value.editedValue === undefined ? "" : value.editedValue)
+				}
 				onChange={this.handleChange}
 			/>
 		);
@@ -244,11 +247,10 @@ export class CheckBoxInput extends Component {
 			value.value = null;
 		} else if (this.props.focused || inputType !== "filter") {
 			value.value = !value.value;
-			// if (inputType !== "filter" && !this.props.focused) {
-			// 	onMouseDown(e);
-			// }
 		}
-		handleChange({ value, row, column, filterTo });
+		if (column.editable) {
+			handleChange({ value, row, column, filterTo });
+		}
 	};
 	render() {
 		const { hasFocus, id, className, value, innerStyle } = this.props;

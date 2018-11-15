@@ -70,15 +70,14 @@ export class Input extends Component {
     );
   };
   handleChange = ({ value, row, column, filterTo }) => {
-    if (this.props.onChange) {
-      if (this.props.onChange({ value, row, column, filterTo }) === false) {
-        return false;
+    if (column.editable) {
+      if (this.props.onChange) {
+        if (this.props.onChange({ value, row, column, filterTo }) === false) {
+          return false;
+        }
       }
+      this.setState({ value });
     }
-    // if (row) {
-    //   row[column.id] = value.value;
-    // }
-    this.setState({ value });
   };
   // handleBlur = e => {
   //   if (!this.noOnBlur) {
@@ -133,7 +132,7 @@ export class Input extends Component {
     const { handleChange, handleBlur, handleFocus } = this;
     let element = null;
     if (
-      !(editable && hasFocus) &&
+      !(editable && (hasFocus || this.props.columns === undefined)) &&
       column.dataType !== "boolean" &&
       inputType !== "filter"
     ) {

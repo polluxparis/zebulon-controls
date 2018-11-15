@@ -141,6 +141,7 @@ export class Input extends Component {
       // booleans are check box even when not editable
       element = cloneElement(<CheckBoxInput />, {
         ...this.props,
+        column,
         value,
         handleChange,
         handleFocus,
@@ -149,6 +150,7 @@ export class Input extends Component {
     } else if (select && inputType !== "filter") {
       element = cloneElement(<SelectInput />, {
         ...this.props,
+        column,
         value,
         handleChange,
         handleFocus,
@@ -158,6 +160,7 @@ export class Input extends Component {
       // this.noOnBlur = true;
       element = cloneElement(<EditableInput />, {
         ...this.props,
+        column,
         value,
         handleChange,
         handleFocus,

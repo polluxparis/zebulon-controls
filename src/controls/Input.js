@@ -65,7 +65,8 @@ export class Input extends Component {
         id: props.id,
         index_: 0,
         caption: props.label,
-        selectItems: props.select
+        selectItems: props.select,
+        editable: props.editable
       }
     );
   };

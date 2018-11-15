@@ -1,6 +1,6 @@
 .zebulon-input {
 	font: inherit;
-	border: "solid 0.02em rgba(0, 0, 0, 0.2),
+	border: solid 0.02em rgba(0, 0, 0, 0.2);
 	box-sizing: border-box;
 	padding: 3px;
 	background-color: inherit;

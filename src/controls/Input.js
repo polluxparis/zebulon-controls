@@ -133,7 +133,7 @@ export class Input extends Component {
     const { handleChange, handleBlur, handleFocus } = this;
     let element = null;
     if (
-      !(editable && (hasFocus || this.props.columns === undefined)) &&
+      !(editable && (hasFocus || this.props.column === undefined)) &&
       column.dataType !== "boolean" &&
       inputType !== "filter"
     ) {

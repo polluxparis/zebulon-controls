@@ -59,22 +59,25 @@ export class EditableInput extends Component {
 	// componentWillReceiveProps(nextProps) {}
 	handleChange = e => {
 		const { row, column, inputType, handleChange, filterTo } = this.props;
-		const { dataType, format } = column;
-		const v = e.target.value;
-		if (!validateInput(v)) {
-			return;
-		}
-		const value = { caption: v, value: v, editedValue: v };
-		if (dataType === "date") {
-			value.value = stringToDate(v, format);
-		} else if (dataType === "number") {
-			value.value = v === "" ? null : Number(v);
-			if (isNaN(value.value)) {
-				value.value = null;
+		if (column.editable || inputType === "filter") {
+			const { dataType, format } = column;
+			const v = e.target.value;
+
+			if (!validateInput(v)) {
+				return;
 			}
+			const value = { caption: v, value: v, editedValue: v };
+			if (dataType === "date") {
+				value.value = stringToDate(v, format);
+			} else if (dataType === "number") {
+				value.value = v === "" ? null : Number(v);
+				if (isNaN(value.value)) {
+					value.value = null;
+				}
+			}
+			value.caption = formatValue(this.props, value.value, true);
+			handleChange({ value, row, column, filterTo });
 		}
-		value.caption = formatValue(this.props, value.value, true);
-		handleChange({ value, row, column, filterTo });
 	};
 	render() {
 		const {
@@ -175,11 +178,20 @@ export class SelectInput extends Component {
 		return options;
 	};
 	handleChange = e => {
-		const { row, column, filterTo, handleChange, value } = this.props;
-		value.caption = e.target.value;
-		value.value = e.target.value;
-		// if(column.reference&&!column.onChange){}
-		handleChange({ value, row, column, filterTo });
+		const {
+			row,
+			column,
+			filterTo,
+			handleChange,
+			value,
+			inputType
+		} = this.props;
+		if (column.editable || inputType === "filter") {
+			value.caption = e.target.value;
+			value.value = e.target.value;
+			// if(column.reference&&!column.onChange){}
+			handleChange({ value, row, column, filterTo });
+		}
 	};
 	render() {
 		const {
@@ -243,12 +255,12 @@ export class CheckBoxInput extends Component {
 			inputType,
 			value
 		} = this.props;
-		if (inputType === "filter" && value.value === false) {
-			value.value = null;
-		} else if (this.props.focused || inputType !== "filter") {
-			value.value = !value.value;
-		}
-		if (column.editable) {
+		if (column.editable || inputType === "filter") {
+			if (inputType === "filter" && value.value === false) {
+				value.value = null;
+			} else if (this.props.focused || inputType !== "filter") {
+				value.value = !value.value;
+			}
 			handleChange({ value, row, column, filterTo });
 		}
 	};

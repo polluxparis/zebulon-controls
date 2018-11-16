@@ -55,9 +55,9 @@ export class EventHandler extends Component {
       this.updateKey = true;
     }
   };
-  onClick = id => {
+  onClick = () => {
     if (this.props.component.props.onActivation) {
-      this.props.component.props.onActivation(id);
+      this.props.component.props.onActivation(this.props.componentId);
     }
   };
   render() {
@@ -65,7 +65,7 @@ export class EventHandler extends Component {
     let div = (
       <div
         id={this.props.id || "event-handler"}
-        onClick={() => this.onClick(this.props.id)}
+        onClick={this.onClick}
         style={this.props.style}
       >
         {this.props.children}

@@ -61,7 +61,7 @@ export class ContextualMenu extends Component {
 		super(props);
 		this.state = {
 			menu: null,
-			component: props.component,
+			componentId: props.componentId,
 			position: { x: 0, y: 0 }
 		};
 		this.openedLevel = {};
@@ -69,7 +69,7 @@ export class ContextualMenu extends Component {
 	}
 	componentDidMount() {
 		window.addEventListener("MENU_EVENT", this.handleEvent);
-		this.div = document.getElementById(this.state.component);
+		this.div = document.getElementById(this.state.componentId);
 	}
 	componentWillUnmount() {
 		window.removeEventListener("MENU_EVENT", this.handleEvent);
@@ -156,8 +156,8 @@ export class ContextualMenu extends Component {
 		this.hoveredItem = {};
 	};
 	handleEvent = e => {
-		const { position, menu, data, component } = e.detail;
-		if (component === this.state.component) {
+		const { position, menu, data, componentId } = e.detail;
+		if (componentId === this.state.componentId) {
 			const rect = this.div.getBoundingClientRect();
 			position.y -= rect.top;
 			position.x -= rect.left;
@@ -265,7 +265,7 @@ export class ContextualMenuClient extends Component {
 			e.persist();
 			const event = new CustomEvent(MENU_EVENT, {
 				detail: {
-					component: this.props.component,
+					componentId: this.props.componentId,
 					ref: this.ref,
 					position: { x: e.clientX, y: e.clientY },
 					menu: this.props.menu,
@@ -283,6 +283,7 @@ export class ContextualMenuClient extends Component {
 		const children = props.children;
 		delete props.children;
 		delete props.collect;
+		delete props.componentId;
 
 		return cloneElement(
 			<div

@@ -50,6 +50,7 @@ export class EventHandler extends Component {
         this.props.component.props.isActive) &&
       this.props.component.handleKeyEvent
     ) {
+      this.updateKey = true;
       this.props.component.handleKeyEvent(e);
     } else if (this.props.keyEvent !== null) {
       this.updateKey = true;

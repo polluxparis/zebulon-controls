@@ -75,7 +75,8 @@ export class EditableInput extends Component {
 					value.value = null;
 				}
 			}
-			value.caption = formatValue(this.props, value.value, true);
+			value.caption = value.editedValue;
+			// formatValue(this.props, value.value, true) || value.editedValue;
 			handleChange({ value, row, column, filterTo });
 		}
 	};

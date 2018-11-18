@@ -77,6 +77,11 @@ export class Input extends Component {
           return false;
         }
       }
+      // to be sure that it will be rendered with the correct values
+      // (the grid is rendered when the row is updated for the first time (in this.props.onChange)
+      // and if the state is not forced with new values, the cell is rendered with previous values ???)
+      const state = this.state;
+      state.value = value;
       this.setState({ value });
     }
   };

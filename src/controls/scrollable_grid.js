@@ -52,7 +52,7 @@ export class ScrollableGrid extends ScrollableArea {
       this.getRowWidth(nextProps.meta, nextProps.locked);
     }
     if (
-      this.state.scroll !== nextProps.scroll
+      this.props.scroll !== nextProps.scroll
       // &&
       // (nextProps.scroll.rows.index !== this.props.scroll.rows.index ||
       //   nextProps.scroll.rows.direction !== this.props.scroll.rows.direction ||

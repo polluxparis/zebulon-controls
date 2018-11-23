@@ -4,10 +4,10 @@ import { keyMap } from "./utils/generic";
 export class ConfirmationModal extends React.Component {
 	constructor(props) {
 		super(props);
+		this.state = { status: {}, body: this.body };
 		if (props.show) {
 			this.init(props);
 		}
-		this.state = { status: {}, body: this.body };
 	}
 	componentWillReceiveProps(nextProps) {
 		if (

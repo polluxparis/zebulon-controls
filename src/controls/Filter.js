@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { ScrollableGrid } from "./scrollable_grid";
+import { EditableInput } from "./input_type";
 import { ScrollbarSize } from "./constants";
 import { ResizableBox } from "react-resizable";
 class FilterValues extends ScrollableGrid {
@@ -90,7 +91,102 @@ const ResizableFilter = props => {
     );
   }
 };
-
+export class Interval extends Component {
+  constructor(props) {
+    super(props);
+    const initialValues = props.initialValues || [undefined, undefined];
+    // this.state = { from: initialValues[0], to: initialValues[1] };
+    this.state = { from: {}, to: {} };
+  }
+  getFrom = () => {
+    return this.state.from;
+  };
+  getTo = () => {
+    return this.state.to;
+  };
+  // handleChange = (type, value) => {
+  //   let vn = value,
+  //     vo = this.state[type],
+  //     changed = vn !== vo;
+  //   if (utils.isDate(vn) || utils.isDate(vo)) {
+  //     changed =
+  //       utils.isNullOrUndefined(vn) !== utils.isNullOrUndefined(vo) ||
+  //       new Date(vn || null).getTime() !==
+  //         new Date(vo || null).getTime();
+  //   }
+  //   if (changed && vn !== undefined) {
+  //     this.setState({ [type]: value });
+  //     if (this.props.onChange) {
+  //       this.props.onChange([
+  //         type === "from" ? value : this.getFrom(),
+  //         type === "to" ? value : this.getTo()
+  //       ]);
+  //     }
+  //   }
+  // };
+  // handleBlur = (type, value) => {
+  //   if (this.props.onChange) {
+  //     this.props.onChange([this.getFrom(), this.getTo()]);
+  //   }
+  // };
+  render() {
+    const { dataType, format, style, hasFocus, id } = this.props;
+    const inputStyle = {};
+    if (dataType === "date") {
+      inputStyle.textAlign = "center";
+    }
+    return (
+      <div key={id} style={style}>
+        <div
+          style={{
+            textAlign: "center",
+            fontWeight: "bold",
+            paddingBottom: title ? 10 : 0
+          }}
+        >
+          {this.props.title}
+        </div>
+        <div>
+          <EditableInput
+            hasFocus={true}
+            style={inputStyle}
+            value={this.getFrom()}
+            dataType={dataType}
+            // format={format}
+            onChange={value => this.handleChange("from", value)}
+            // onBlur={value => this.handleBlur("from", value)}
+            editable={true}
+          />
+        </div>
+        <div>
+          <EditableInput
+            hasFocus={false}
+            style={{ ...inputStyle, marginTop: ".3em" }}
+            value={this.getTo()}
+            dataType={dataType}
+            // format={format}
+            onChange={value => this.handleChange("to", value)}
+            // onBlur={value => this.handleBlur("to", value)}
+            editable={true}
+          />
+        </div>
+      </div>
+    );
+  }
+}
+// <button
+//   style={{
+//     marginTop: ".3em",
+//     width: "100%"
+//   }}
+//   onClick={() =>
+//     this.props.save({
+//       from: this.getFrom(),
+//       to: this.getTo()
+//     })}
+// >
+//   Apply filter
+// </button>
 export class Filter extends Component {
   constructor(props) {
     super(props);
@@ -102,7 +198,8 @@ export class Filter extends Component {
       maxRows: props.maxRows || 10,
       rowHeight: props.rowHeight || 20,
       width: (props.style.width || 200) * 0.98,
-      height: (props.maxRows || 10) * (props.rowHeight || 20) - 5
+      height: (props.maxRows || 10) * (props.rowHeight || 20) - 5,
+      type: props.type || "values"
     };
   }
   componentWillReceiveProps(nextProps) {
@@ -146,6 +243,18 @@ export class Filter extends Component {
     }
   };
 
+  onChange = (to, value) => {
+    console.log("interval", to, value);
+    // const filter = this.state.filter;
+    // const checked = filter[id] === undefined;
+    // if (checked) {
+    //   filter[id] = id;
+    // } else {
+    //   delete filter[id];
+    // }
+    // this.setState({ filter, index, changed: !this.state.changed });
+    //this.selectCell({ rows: index, columns: 0 });
+  };
   onChangeCheck = (id, index) => {
     const filter = this.state.filter;
     const checked = filter[id] === undefined;
@@ -193,41 +302,22 @@ export class Filter extends Component {
     console.log(1, this.state, newState, data.size);
     this.setState(newState);
   };
+
   render() {
     const { maxRows, rowHeight } = this.state;
-    return (
-      <ResizableFilter
-        id="filter"
-        style={{
-          ...this.props.style,
-          height: "fit-content"
-        }}
-        resizable={
-          this._isMounted &&
-          (this.props.resizable || this.props.resizable === undefined)
-        }
-        height={this.state.filterHeight}
-        width={this.state.width}
-        onResize={(e, data) => {
-          this.onResize(e, data);
-        }}
-      >
-        <div style={{ textAlign: "center" }}>
-          {this.props.title || "Filter"}
-        </div>
-        <div>
-          <input
-            type="text"
-            style={{
-              width: "94%",
-              margin: "2%",
-              textAlign: "left"
-            }}
-            autoFocus={true}
-            value={this.value}
-            onChange={e => this.filterItems(e.target.value)}
-          />
-        </div>
+    let filter = (
+      <div>
+        <input
+          type="text"
+          style={{
+            width: "94%",
+            margin: "2%",
+            textAlign: "left"
+          }}
+          autoFocus={true}
+          value={this.value}
+          onChange={e => this.filterItems(e.target.value)}
+        />
         <div>
           <input
             id="-1"
@@ -255,6 +345,39 @@ export class Filter extends Component {
             ref={ref => (this.values = ref)}
           />
         </div>
+      </div>
+    );
+    // if (this.state.type === "interval") {
+    //   filter = (
+    //     <Interval
+    //       from={this.state.items[0]}
+    //       to={this.state.items[1]}
+    //       dataType={null}
+    //       onChange={this.onChange}
+    //     />
+    //   );
+    // }
+    return (
+      <ResizableFilter
+        id="filter"
+        style={{
+          ...this.props.style,
+          height: "fit-content"
+        }}
+        resizable={
+          this._isMounted &&
+          (this.props.resizable || this.props.resizable === undefined)
+        }
+        height={this.state.filterHeight}
+        width={this.state.width}
+        onResize={(e, data) => {
+          this.onResize(e, data);
+        }}
+      >
+        <div style={{ textAlign: "center" }}>
+          {this.props.title || "Filter"}
+        </div>
+        {filter}
         <button style={{ width: "96%", margin: "2%" }} onClick={this.onOk}>
           Apply filter
         </button>

@@ -72,7 +72,7 @@ export class Input extends Component {
   };
   handleChange = ({ value, row, column, filterTo }) => {
     if (column.editable) {
-      if (this.props.onChange) {
+      if (this.props.onChange || this.props.inputType === "filter") {
         if (this.props.onChange({ value, row, column, filterTo }) === false) {
           return false;
         }
@@ -192,24 +192,4 @@ export class Input extends Component {
       </ContextualMenuClient>
     );
   }
-
-  // if (inputType === "field") {
-  //   input = (
-  //     <label
-  //       id={id}
-  //       key={id}
-  //       style={{
-  //         display: "flex",
-  //         justifyContent: "space-between",
-  //         padding: "0.2em"
-  //       }}
-  //       // className={this.props.className}
-  //     >
-  //       {column.caption}
-  //       {input}
-  //     </label>
-  //   );
-  // }
-  // return input;
-  // }
 }

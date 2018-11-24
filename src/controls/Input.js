@@ -71,8 +71,8 @@ export class Input extends Component {
     );
   };
   handleChange = ({ value, row, column, filterTo }) => {
-    if (column.editable) {
-      if (this.props.onChange || this.props.inputType === "filter") {
+    if (column.editable || this.props.inputType === "filter") {
+      if (this.props.onChange) {
         if (this.props.onChange({ value, row, column, filterTo }) === false) {
           return false;
         }

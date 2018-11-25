@@ -300,8 +300,9 @@ export const dateToString = (d, fmt) => {
   if (isNullValue(fmt) || fmt === "LocaleDateString")
     return d.toLocaleDateString();
   else if (fmt === "LocaleString") return d.toLocaleString();
-  else if (fmt === "LocaleTimeString") return d.toLocaleTimeString();
-  else if (fmt === "ISO") return d.toISOString();
+  else if (fmt === "ISO")
+    // else if (fmt === "LocaleTimeString") return d.toLocaleTimeString();
+    return d.toISOString();
   else if (fmt === "UTC") return d.toUTCString();
   const date = {
     dd: String(d.getDate()).padStart(2, "0"),
@@ -323,6 +324,70 @@ export const dateToString = (d, fmt) => {
   });
   return dd.slice(0, dd.length - 1);
 };
+// export const monthToString = (d, fmt) => {
+//   // format not managed yet
+//   if (!isDate(d)) {
+//     return undefined;
+//   }
+//   if (isNullValue(fmt) || fmt === "LocaleDateString")
+//     return d.toLocaleDateString();
+//   else if (fmt === "LocaleString") return d.toLocaleString();
+//   else if (fmt === "ISO")
+//     // else if (fmt === "LocaleTimeString") return d.toLocaleTimeString();
+//     return d.toISOString();
+//   else if (fmt === "UTC") return d.toUTCString();
+//   const date = {
+//     dd: String(d.getDate()).padStart(2, "0"),
+//     mm: String(d.getMonth() + 1).padStart(2, "0"),
+//     yy: String(d.getFullYear()),
+//     hh: String(d.getHours()).padStart(2, "0"),
+//     mi: String(d.getMinutes()).padStart(2, "0"),
+//     ss: String(d.getSeconds()).padStart(2, "0")
+//   };
+//   const format = fmt.split(/[/: ]/);
+//   let index = 0,
+//     dd = "";
+//   format.forEach(f => {
+//     const x = date[f.slice(0, 2)];
+//     if (x) {
+//       index += f.length + 1;
+//       dd += x + (fmt[index - 1] || " ");
+//     }
+//   });
+//   return dd.slice(0, dd.length - 1);
+// };
+// export const yearToString = (d, fmt) => {
+//   // format not managed yet
+//   if (!isDate(d)) {
+//     return undefined;
+//   }
+//   if (isNullValue(fmt) || fmt === "LocaleDateString")
+//     return d.toLocaleDateString();
+//   else if (fmt === "LocaleString") return d.toLocaleString();
+//   else if (fmt === "ISO")
+//     // else if (fmt === "LocaleTimeString") return d.toLocaleTimeString();
+//     return d.toISOString();
+//   else if (fmt === "UTC") return d.toUTCString();
+//   const date = {
+//     dd: String(d.getDate()).padStart(2, "0"),
+//     mm: String(d.getMonth() + 1).padStart(2, "0"),
+//     yy: String(d.getFullYear()),
+//     hh: String(d.getHours()).padStart(2, "0"),
+//     mi: String(d.getMinutes()).padStart(2, "0"),
+//     ss: String(d.getSeconds()).padStart(2, "0")
+//   };
+//   const format = fmt.split(/[/: ]/);
+//   let index = 0,
+//     dd = "";
+//   format.forEach(f => {
+//     const x = date[f.slice(0, 2)];
+//     if (x) {
+//       index += f.length + 1;
+//       dd += x + (fmt[index - 1] || " ");
+//     }
+//   });
+//   return dd.slice(0, dd.length - 1);
+// };
 // export const toMonth = d => {
 //   const d_ = new Date(d);
 //   d_.setDate(1);
@@ -334,16 +399,31 @@ export const dateToString = (d, fmt) => {
 //   d_.setMonth(0);
 //   return new Date(d_);
 // };
+const getLocalDateOrder = () => {
+  const sd = new Date(1, 1, 3, 4, 5, 6).toLocaleString();
+  const pos = [];
+  for (let i = 1; i < 7; i++) {
+    pos.push({ tp: i - 1, pos: sd.search(i.toString()) });
+  }
+  pos.sort((a, b) => (a.pos > b.pos) - (a.pos < b.pos));
+
+  return pos.map(x => x.tp);
+};
+export const localDateOrder = getLocalDateOrder();
 const daysByMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-export const stringToDate = (s, fmt) => {
+export const stringToDate = s => {
   // format not managed yet
   //  a voir culture
   if (!s) {
     return null;
   }
-  const ds = s.split(/[.:/ ]+/g);
-  const d = ds.map(v => parseInt(v, 8));
-  if (d.length !== 3) {
+  const ds_ = s.split(/[.:/ ]+/g);
+  const ds = ["", "", ""];
+  for (let i = 0; i < 3; i++) {
+    ds[localDateOrder[i]] = ds_[i];
+  }
+  const d = ds.map(v => parseInt(v, 10));
+  if (ds_.length !== 3) {
     return undefined;
   }
   // a voir 12 mois nb days...
@@ -351,16 +431,54 @@ export const stringToDate = (s, fmt) => {
   if (ds[1] > 12) {
     return undefined;
   }
-  if (ds[2] < 2000 || ds[2] > 3000) {
+  if (ds[0] < 2000 || ds[2] > 3000) {
     return undefined;
   }
-  const nDays = daysByMonth[d[1] - 1] + (d[1] === 2 && !(d[2] % 4));
-  if (d[0] > nDays) {
+  const nDays = daysByMonth[d[1] - 1] + (d[1] === 2 && !(d[0] % 4));
+  if (d[2] > nDays) {
     return undefined;
   }
-  return !isNaN(Date.parse(`${ds[2]}-${ds[1]}-${ds[0]}`))
-    ? new Date(`${ds[2]}-${ds[1].padStart(2, 0)}-${ds[0].padStart(2, 0)}`)
+  return !isNaN(Date.parse(`${ds[0]}-${ds[1]}-${ds[2]}`))
+    ? new Date(`${ds[0]}-${ds[1].padStart(2, 0)}-${ds[2].padStart(2, 0)}`)
     : undefined;
+};
+export const stringToMonth = s => {
+  // format not managed yet
+  //  a voir culture
+  if (!s) {
+    return null;
+  }
+  const ds = s.split(/[.:/ ]+/g);
+  const d = ds.map(v => parseInt(v, 10));
+  if (d.length !== 2) {
+    return undefined;
+  }
+  // a voir 12 mois nb days...
+  // months 0..11 ??????
+  if (ds[0] > 12) {
+    return undefined;
+  }
+  if (ds[1] < 2000 || ds[2] > 3000) {
+    return undefined;
+  }
+  return !isNaN(Date.parse(`${ds[1]}-${ds[0]}-01`))
+    ? new Date(`${ds[1]}-${ds[0].padStart(2, 0)}-01`)
+    : undefined;
+};
+export const stringToYear = s => {
+  // format not managed yet
+  //  a voir culture
+  if (!s) {
+    return null;
+  }
+  const y = parseInt(s, 10);
+  if (isNaN(y)) {
+    return undefined;
+  }
+  if (y < 2000 || y > 3000) {
+    return undefined;
+  }
+  return new Date(`${y}-01-01`);
 };
 // -------------------------------------------
 //  key management

@@ -6,7 +6,11 @@ import {
 	isPromise,
 	isMap,
 	dateToString,
+	// monthToString,
+	// yearToString,
 	stringToDate,
+	stringToMonth,
+	stringToYear,
 	numberToString
 } from "./utils/generic";
 
@@ -17,7 +21,7 @@ export const validateInput = (value, dataType, validateInput) => {
 	let v = value;
 	if (validateInput) {
 		return validateInput(value);
-	} else if (dataType === "number") {
+	} else if (dataType === "number" || dataType === "year") {
 		v =
 			value.slice(value.length - 1, value.length) === "."
 				? value.slice(0, value.length - 1)
@@ -26,7 +30,7 @@ export const validateInput = (value, dataType, validateInput) => {
 			v = "";
 		}
 		return !isNaN(Number(v));
-	} else if (dataType === "date") {
+	} else if (dataType === "date" || dataType === "month") {
 		v = value.match(/[0123456789.:/ ]+/g) || [];
 		return value === "" || (v.length === 1 && v[0] === value);
 	}
@@ -46,7 +50,11 @@ export const formatValue = (props, value, focused) => {
 	} else if (dataType === "boolean" && value === "") {
 		v = null;
 	} else if (dataType === "date" && value !== null) {
-		v = dateToString(v, undefined || "dd/mm/yyyy");
+		v = dateToString(v, "LocaleDateString");
+	} else if (dataType === "month" && value !== null) {
+		v = dateToString(v, "mm/yyyy");
+	} else if (dataType === "year" && value !== null) {
+		v = dateToString(v, "yyyy");
 	} else if (dataType === "number" && value !== null) {
 		v = focused && editable ? v.toString() : numberToString(v);
 	}
@@ -68,7 +76,13 @@ export class EditableInput extends Component {
 			}
 			const value = { caption: v, value: v, editedValue: v };
 			if (dataType === "date") {
-				value.value = stringToDate(v, format);
+				value.value = stringToDate(v);
+			}
+			if (dataType === "month") {
+				value.value = stringToMonth(v);
+			}
+			if (dataType === "year") {
+				value.value = stringToYear(v);
 			} else if (dataType === "number") {
 				value.value = v === "" ? null : Number(v);
 				if (isNaN(value.value)) {

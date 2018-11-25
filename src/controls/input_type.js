@@ -84,7 +84,7 @@ export class EditableInput extends Component {
 		const {
 			hasFocus,
 			handleFocus,
-			// handleBlur,
+			handleBlur,
 			id,
 			className,
 			inputType,
@@ -112,7 +112,7 @@ export class EditableInput extends Component {
 				className={className || "zebulon-input"}
 				autoFocus={hasFocus && inputType !== "filter"}
 				onFocus={handleFocus}
-				// onBlur={handleBlur}
+				onBlur={handleBlur}
 				style={style}
 				value={
 					value.caption ||

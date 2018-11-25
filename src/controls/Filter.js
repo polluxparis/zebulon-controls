@@ -91,89 +91,89 @@ const ResizableFilter = props => {
     );
   }
 };
-export class Interval extends Component {
-  constructor(props) {
-    super(props);
-    const initialValues = props.initialValues || [undefined, undefined];
-    // this.state = { from: initialValues[0], to: initialValues[1] };
-    this.state = { from: {}, to: {} };
-  }
-  getFrom = () => {
-    return this.state.from;
-  };
-  getTo = () => {
-    return this.state.to;
-  };
-  // handleChange = (type, value) => {
-  //   let vn = value,
-  //     vo = this.state[type],
-  //     changed = vn !== vo;
-  //   if (utils.isDate(vn) || utils.isDate(vo)) {
-  //     changed =
-  //       utils.isNullOrUndefined(vn) !== utils.isNullOrUndefined(vo) ||
-  //       new Date(vn || null).getTime() !==
-  //         new Date(vo || null).getTime();
-  //   }
-  //   if (changed && vn !== undefined) {
-  //     this.setState({ [type]: value });
-  //     if (this.props.onChange) {
-  //       this.props.onChange([
-  //         type === "from" ? value : this.getFrom(),
-  //         type === "to" ? value : this.getTo()
-  //       ]);
-  //     }
-  //   }
-  // };
-  // handleBlur = (type, value) => {
-  //   if (this.props.onChange) {
-  //     this.props.onChange([this.getFrom(), this.getTo()]);
-  //   }
-  // };
-  render() {
-    const { dataType, format, style, hasFocus, id } = this.props;
-    const inputStyle = {};
-    if (dataType === "date") {
-      inputStyle.textAlign = "center";
-    }
-    return (
-      <div key={id} style={style}>
-        <div
-          style={{
-            textAlign: "center",
-            fontWeight: "bold",
-            paddingBottom: title ? 10 : 0
-          }}
-        >
-          {this.props.title}
-        </div>
-        <div>
-          <EditableInput
-            hasFocus={true}
-            style={inputStyle}
-            value={this.getFrom()}
-            dataType={dataType}
-            // format={format}
-            onChange={value => this.handleChange("from", value)}
-            // onBlur={value => this.handleBlur("from", value)}
-            editable={true}
-          />
-        </div>
-        <div>
-          <EditableInput
-            hasFocus={false}
-            style={{ ...inputStyle, marginTop: ".3em" }}
-            value={this.getTo()}
-            dataType={dataType}
-            // format={format}
-            onChange={value => this.handleChange("to", value)}
-            // onBlur={value => this.handleBlur("to", value)}
-            editable={true}
-          />
-        </div>
-      </div>
-    );
-  }
-}
+// export class Interval extends Component {
+//   constructor(props) {
+//     super(props);
+//     const initialValues = props.initialValues || [undefined, undefined];
+//     // this.state = { from: initialValues[0], to: initialValues[1] };
+//     this.state = { from: {}, to: {} };
+//   }
+//   getFrom = () => {
+//     return this.state.from;
+//   };
+//   getTo = () => {
+//     return this.state.to;
+//   };
+//   // handleChange = (type, value) => {
+//   //   let vn = value,
+//   //     vo = this.state[type],
+//   //     changed = vn !== vo;
+//   //   if (utils.isDate(vn) || utils.isDate(vo)) {
+//   //     changed =
+//   //       utils.isNullOrUndefined(vn) !== utils.isNullOrUndefined(vo) ||
+//   //       new Date(vn || null).getTime() !==
+//   //         new Date(vo || null).getTime();
+//   //   }
+//   //   if (changed && vn !== undefined) {
+//   //     this.setState({ [type]: value });
+//   //     if (this.props.onChange) {
+//   //       this.props.onChange([
+//   //         type === "from" ? value : this.getFrom(),
+//   //         type === "to" ? value : this.getTo()
+//   //       ]);
+//   //     }
+//   //   }
+//   // };
+//   // handleBlur = (type, value) => {
+//   //   if (this.props.onChange) {
+//   //     this.props.onChange([this.getFrom(), this.getTo()]);
+//   //   }
+//   // };
+//   render() {
+//     const { dataType, format, style, hasFocus, id } = this.props;
+//     const inputStyle = {};
+//     if (dataType === "date") {
+//       inputStyle.textAlign = "center";
+//     }
+//     return (
+//       <div key={id} style={style}>
+//         <div
+//           style={{
+//             textAlign: "center",
+//             fontWeight: "bold",
+//             paddingBottom: title ? 10 : 0
+//           }}
+//         >
+//           {this.props.title}
+//         </div>
+//         <div>
+//           <EditableInput
+//             hasFocus={true}
+//             style={inputStyle}
+//             value={this.getFrom()}
+//             dataType={dataType}
+//             // format={format}
+//             onChange={value => this.handleChange("from", value)}
+//             // onBlur={value => this.handleBlur("from", value)}
+//             editable={true}
+//           />
+//         </div>
+//         <div>
+//           <EditableInput
+//             hasFocus={false}
+//             style={{ ...inputStyle, marginTop: ".3em" }}
+//             value={this.getTo()}
+//             dataType={dataType}
+//             // format={format}
+//             onChange={value => this.handleChange("to", value)}
+//             // onBlur={value => this.handleBlur("to", value)}
+//             editable={true}
+//           />
+//         </div>
+//       </div>
+//     );
+//   }
+// }
 // <button
 //   style={{
 //     marginTop: ".3em",

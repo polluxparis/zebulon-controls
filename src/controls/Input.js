@@ -85,18 +85,18 @@ export class Input extends Component {
       this.setState({ value });
     }
   };
-  // handleBlur = e => {
-  //   if (!this.noOnBlur) {
-  //     this.setState({
-  //       value: {
-  //         ...this.state.value,
-  //         caption: formatValue(this.props, this.state.value.value, false),
-  //         editedValue: undefined
-  //       }
-  //     });
-  //   }
-  //   this.noOnBlur = false;
-  // };
+  handleBlur = e => {
+    if (!this.noOnBlur && this.props.inputType === "filter") {
+      this.setState({
+        value: {
+          ...this.state.value,
+          caption: formatValue(this.props, this.state.value.value, false),
+          editedValue: undefined
+        }
+      });
+    }
+    this.noOnBlur = false;
+  };
   handleFocus = e => {
     const { inputType, onFocus, row } = this.props;
     const column = this.column;

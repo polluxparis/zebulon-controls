@@ -151,7 +151,8 @@ export class Input extends Component {
         value,
         handleChange,
         handleFocus,
-        handleBlur
+        handleBlur,
+        ref: ref => (this.ref = ref)
       });
     } else if (select && inputType !== "filter") {
       element = cloneElement(<SelectInput />, {
@@ -160,7 +161,8 @@ export class Input extends Component {
         value,
         handleChange,
         handleFocus,
-        handleBlur
+        handleBlur,
+        ref: ref => (this.ref = ref)
       });
     } else {
       // this.noOnBlur = true;
@@ -170,7 +172,8 @@ export class Input extends Component {
         value,
         handleChange,
         handleFocus,
-        handleBlur
+        handleBlur,
+        ref: ref => (this.ref = ref)
       });
     }
     return (

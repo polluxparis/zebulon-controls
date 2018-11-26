@@ -244,7 +244,7 @@ export class Filter extends Component {
   };
 
   onChange = (to, value) => {
-    console.log("interval", to, value);
+    // console.log("interval", to, value);
     // const filter = this.state.filter;
     // const checked = filter[id] === undefined;
     // if (checked) {
@@ -299,7 +299,7 @@ export class Filter extends Component {
       filterHeight: data.size.height,
       width: data.size.width
     };
-    console.log(1, this.state, newState, data.size);
+    // console.log(1, this.state, newState, data.size);
     this.setState(newState);
   };
 

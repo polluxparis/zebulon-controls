@@ -4,28 +4,30 @@ import { keyMap } from "./utils/generic";
 export class ConfirmationModal extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = { status: {}, body: this.body };
+		console.log("modal");
+		this.state = { status: { loading: true, loaded: false } };
 		if (props.show) {
 			this.init(props);
 		}
+		this.state.body = this.body;
 	}
 	componentWillReceiveProps(nextProps) {
-		if (
-			nextProps.keyEvent &&
-			nextProps.keyEvent !== this.props.keyEvent &&
-			!(nextProps.show && !this.props.show)
-		) {
-			const keyCode =
-				nextProps.keyEvent.which || nextProps.keyEvent.keyCode;
-			const key = keyMap[keyCode];
-			if (key === "Escape") {
-				nextProps.keyEvent.preventDefault();
-				this.onConfirm(false, false, nextProps);
-			} else if (key === "Enter") {
-				nextProps.keyEvent.preventDefault();
-				this.onConfirm(true, true, nextProps);
-			}
-		}
+		// if (
+		// 	nextProps.keyEvent &&
+		// 	nextProps.keyEvent !== this.props.keyEvent &&
+		// 	!(nextProps.show && !this.props.show)
+		// ) {
+		// 	const keyCode =
+		// 		nextProps.keyEvent.which || nextProps.keyEvent.keyCode;
+		// 	const key = keyMap[keyCode];
+		// 	if (key === "Escape") {
+		// 		nextProps.keyEvent.preventDefault();
+		// 		this.onConfirm(false, false, nextProps);
+		// 	} else if (key === "Enter") {
+		// 		nextProps.keyEvent.preventDefault();
+		// 		this.onConfirm(true, true, nextProps);
+		// 	}
+		// }
 		if (nextProps.show) {
 			this.init(nextProps);
 			this.setState({ body: this.body });
@@ -52,9 +54,10 @@ export class ConfirmationModal extends React.Component {
 				<button
 					style={{ minWidth: 70, margin: 5 }}
 					onClick={e => {
-						if (!e.defaultPrevented) {
-							this.onConfirm(true, false, props);
-						}
+						// if (!e.defaultPrevented) {
+						// 	this.onConfirm(true, false, props);
+						// }
+						this.onNo();
 					}}
 					tabIndex={1}
 					key={1}
@@ -64,9 +67,10 @@ export class ConfirmationModal extends React.Component {
 				<button
 					style={{ minWidth: 70, margin: 5 }}
 					onClick={e => {
-						if (!e.defaultPrevented) {
-							this.onConfirm(false, false, props);
-						}
+						// if (!e.defaultPrevented) {
+						// 	this.onConfirm(false, false, props);
+						// }
+						this.onEscape();
 					}}
 					tabIndex={2}
 					key={2}
@@ -80,9 +84,9 @@ export class ConfirmationModal extends React.Component {
 				<button
 					style={{ minWidth: 70, margin: 5 }}
 					onClick={e => {
-						if (!e.defaultPrevented) {
-							this.onConfirm(true, undefined, props);
-						}
+						// if (!e.defaultPrevented) {
+						this.onEnter(); //this.onConfirm(true, undefined, props);
+						// }
 					}}
 					tabIndex={0}
 					key={0}
@@ -93,9 +97,9 @@ export class ConfirmationModal extends React.Component {
 				<button
 					style={{ minWidth: 70, margin: 5 }}
 					onClick={e => {
-						if (!e.defaultPrevented) {
-							this.onConfirm(false, undefined, props);
-						}
+						// if (!e.defaultPrevented) {
+						this.onEscape(); //this.onConfirm(false, undefined, props);
+						// }
 					}}
 					tabIndex={0}
 					key={1}
@@ -114,9 +118,9 @@ export class ConfirmationModal extends React.Component {
 				<button
 					style={{ minWidth: 70, margin: 5 }}
 					onClick={e => {
-						if (!e.defaultPrevented) {
-							this.onConfirm(true, undefined, props);
-						}
+						// if (!e.defaultPrevented) {
+						this.onEnter(); //this.onConfirm(true, undefined, props);
+						// }
 					}}
 					tabIndex={0}
 					key={0}
@@ -127,9 +131,9 @@ export class ConfirmationModal extends React.Component {
 				<button
 					style={{ minWidth: 70, margin: 5 }}
 					onClick={e => {
-						if (!e.defaultPrevented) {
-							this.onConfirm(false, undefined, props);
-						}
+						// if (!e.defaultPrevented) {
+						this.onEscape(); // this.onConfirm(false, undefined, props);
+						// }
 					}}
 					tabIndex={1}
 					key={1}
@@ -145,7 +149,7 @@ export class ConfirmationModal extends React.Component {
 							if (!e.defaultPrevented) {
 								this.init(props, true);
 								this.setState({
-									status: { loading: true },
+									status: { loading: true, loaded: false },
 									body: this.body
 								});
 							}
@@ -163,9 +167,10 @@ export class ConfirmationModal extends React.Component {
 				<button
 					style={{ minWidth: 70, margin: 5 }}
 					onClick={e => {
-						if (!e.defaultPrevented) {
-							this.onConfirm(false, undefined, props);
-						}
+						// if (!e.defaultPrevented) {
+						// this.onConfirm(false, undefined, props);
+						this.onEnter();
+						// }
 					}}
 					tabIndex={0}
 					key={0}
@@ -182,11 +187,11 @@ export class ConfirmationModal extends React.Component {
 			));
 		} else if (type === "foreignKey" && props.detail.callback) {
 			const foreignProps = {
-				callbackForeignKey: (ok, message) => {
-					this.row = message;
-					this.onConfirm(ok, undefined, props);
-				},
-				onDoubleClick: () => this.onConfirm(true, undefined, props),
+				// callbackForeignKey: (ok, message) => {
+				// 	this.row = message;
+				// 	this.onConfirm(ok, undefined, props);
+				// },
+				onDoubleClick: () => this.onEnter(), //this.onConfirm(true, undefined, props),
 				keyEvent: props.keyEvent,
 				onRowEnter: ({ row }) => {
 					this.row = row;
@@ -195,14 +200,16 @@ export class ConfirmationModal extends React.Component {
 				isModal: true,
 				status: this.state.status,
 				refresh,
-				ref: ref => (this.zebulonTable = ref)
+				onGetData: () =>
+					this.setState({ status: { loading: false, loaded: true } }),
+				getComponent: ref => (this.component = ref)
 			};
 
 			this.body = <div>{React.cloneElement(body, foreignProps)}</div>;
 		} else if (type === "conflict" && props.detail.callback) {
 			const conflictProps = {
 				keyEvent: props.keyEvent,
-				ref: ref => (this.zebulonTable = ref)
+				getComponent: ref => (this.component = ref)
 			};
 
 			this.body = <div>{React.cloneElement(body, conflictProps)}</div>;
@@ -225,6 +232,15 @@ export class ConfirmationModal extends React.Component {
 				props.detail.callback(carryOn, message);
 			}
 		}
+	};
+	onEnter = () => {
+		this.onConfirm(true, true, this.props);
+	};
+	onNo = () => {
+		this.onConfirm(true, false, this.props);
+	};
+	onEscape = () => {
+		this.onConfirm(false, false, this.props);
 	};
 	render() {
 		// Render nothing if the "show" prop is false

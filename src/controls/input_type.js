@@ -129,8 +129,9 @@ export class EditableInput extends Component {
 				onBlur={handleBlur}
 				style={style}
 				value={
-					value.caption ||
-					(value.editedValue === undefined ? "" : value.editedValue)
+					(value.editedValue === undefined
+						? ""
+						: value.editedValue) || value.caption
 				}
 				onChange={this.handleChange}
 			/>

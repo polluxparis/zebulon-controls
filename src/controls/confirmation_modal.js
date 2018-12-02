@@ -200,8 +200,8 @@ export class ConfirmationModal extends React.Component {
 				isModal: true,
 				status: this.state.status,
 				refresh,
-				onGetData: () =>
-					this.setState({ status: { loading: false, loaded: true } }),
+				// onGetData: () =>
+				// 	this.setState({ status: { loading: false, loaded: true } }),
 				getComponent: ref => (this.component = ref)
 			};
 

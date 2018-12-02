@@ -134,14 +134,14 @@ export class ScrollableGrid extends ScrollableArea {
     if (range.start.rows === undefined) {
       range.start = range.end;
     }
-    const scrollOnClick =
-      !fromKey &&
-      this.props.locked &&
-      (cell.rows === this.state.scroll.rows.startIndex ||
-        cell.rows === this.stopIndex.rows);
-    return this.selectRange(range, scrollOnClick);
+    const noFocus = fromKey ? undefined : false;
+    // !fromKey &&
+    // this.props.locked &&
+    // (cell.rows === this.state.scroll.rows.startIndex ||
+    //   cell.rows === this.stopIndex.rows);
+    return this.selectRange(range, noFocus);
   };
-  selectRange = (range, scrollOnClick) => {
+  selectRange = (range, noFocus) => {
     if (this.props.selectRange) {
       this.props.selectRange(
         range,
@@ -153,7 +153,7 @@ export class ScrollableGrid extends ScrollableArea {
         undefined,
         undefined,
         undefined,
-        scrollOnClick
+        noFocus
       );
     } else {
       this.setState({ selectedRange: range });
@@ -354,16 +354,19 @@ export class ScrollableGrid extends ScrollableArea {
       // ctrl+A
       e.preventDefault();
       if (
-        this.selectRange({
-          start: {
-            columns: this.lastIndex(AxisType.COLUMNS, -1),
-            rows: this.lastIndex(AxisType.ROWS, -1)
+        this.selectRange(
+          {
+            start: {
+              columns: this.lastIndex(AxisType.COLUMNS, -1),
+              rows: this.lastIndex(AxisType.ROWS, -1)
+            },
+            end: {
+              columns: this.lastIndex(AxisType.COLUMNS, 1),
+              rows: this.lastIndex(AxisType.ROWS, 1)
+            }
           },
-          end: {
-            columns: this.lastIndex(AxisType.COLUMNS, 1),
-            rows: this.lastIndex(AxisType.ROWS, 1)
-          }
-        }) === false
+          true
+        ) === false
       ) {
         return false;
       }
@@ -659,7 +662,7 @@ export class ScrollableGrid extends ScrollableArea {
       const ix = index;
       const onClick = e => {
         e.preventDefault();
-        this.selectCell({ rows: ix, columns: 0 }, e.shiftKey);
+        this.selectCell({ rows: ix, columns: 0 }, e.shiftKey, false);
       };
       // const onMouseOver = e => {
       //   e.preventDefault();

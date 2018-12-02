@@ -49,9 +49,10 @@ export class Input extends Component {
           nextProps.value,
           nextProps.focused
         );
-        value.editedValue = !nextProps.focused
-          ? undefined
-          : this.state.value.editedValue;
+        value.editedValue =
+          !nextProps.focused && nextProps.inputType === "cell"
+            ? undefined
+            : this.state.value.editedValue;
       }
       this.setState({
         value
@@ -86,7 +87,7 @@ export class Input extends Component {
     }
   };
   handleBlur = e => {
-    if (!this.noOnBlur && this.props.inputType === "filter") {
+    if (!this.noOnBlur && this.props.inputType !== "cell") {
       this.setState({
         value: {
           ...this.state.value,
@@ -104,7 +105,7 @@ export class Input extends Component {
       this.noOnBlur = true;
       onFocus(e, row, column);
       this.noOnBlur = false;
-      if (inputType === "filter") {
+      if (inputType !== "cell") {
         if (column.filterType !== "values") {
           const caption = formatValue(this.props, this.state.value.value, true);
           this.setState({

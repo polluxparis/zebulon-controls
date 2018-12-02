@@ -135,13 +135,14 @@ export class ScrollableGrid extends ScrollableArea {
       range.start = range.end;
     }
     const noFocus = fromKey ? undefined : false;
-    // !fromKey &&
-    // this.props.locked &&
-    // (cell.rows === this.state.scroll.rows.startIndex ||
-    //   cell.rows === this.stopIndex.rows);
-    return this.selectRange(range, noFocus);
+    const scrollOnClick =
+      !fromKey &&
+      this.props.locked &&
+      (cell.rows === this.state.scroll.rows.startIndex ||
+        cell.rows === this.stopIndex.rows);
+    return this.selectRange(range, noFocus, scrollOnClick);
   };
-  selectRange = (range, noFocus) => {
+  selectRange = (range, noFocus, scrollOnClick) => {
     if (this.props.selectRange) {
       this.props.selectRange(
         range,
@@ -152,8 +153,8 @@ export class ScrollableGrid extends ScrollableArea {
         },
         undefined,
         undefined,
-        undefined,
-        noFocus
+        noFocus,
+        scrollOnClick
       );
     } else {
       this.setState({ selectedRange: range });

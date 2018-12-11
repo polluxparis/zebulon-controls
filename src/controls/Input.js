@@ -105,14 +105,15 @@ export class Input extends Component {
       this.noOnBlur = true;
       onFocus(e, row, column);
       this.noOnBlur = false;
-      if (inputType !== "cell") {
-        if (column.filterType !== "values") {
-          const caption = formatValue(this.props, this.state.value.value, true);
-          this.setState({
-            value: { ...this.state.value, caption },
-            focused: true
-          });
-        }
+    }
+    //  a verifier
+    if (inputType !== "cell") {
+      if (column.filterType !== "values") {
+        const caption = formatValue(this.props, this.state.value.value, true);
+        this.setState({
+          value: { ...this.state.value, caption },
+          focused: true
+        });
       }
     }
   };

@@ -50,10 +50,11 @@ export class Input extends Component {
           nextProps.value,
           nextProps.focused
         );
-        value.editedValue =
-          !nextProps.focused && nextProps.inputType === "cell"
-            ? undefined
-            : this.state.value.editedValue;
+        // value.editedValue =
+        //   !nextProps.focused && nextProps.inputType === "cell"
+        //     ? undefined
+        //     : this.state.value.editedValue;
+        value.editedValue = undefined;
       }
       this.setState({
         value

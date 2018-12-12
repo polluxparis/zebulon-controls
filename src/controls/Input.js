@@ -32,7 +32,8 @@ export class Input extends Component {
     this.column = this.initColumn(nextProps);
     if (
       nextProps.value !== this.props.value ||
-      nextProps.focused !== this.props.focused
+      nextProps.focused !== this.props.focused ||
+      nextProps.hasFocus !== this.props.hasFocus
     ) {
       let value = this.state.value;
       if (isObject(nextProps.value)) {

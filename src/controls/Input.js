@@ -30,35 +30,37 @@ export class Input extends Component {
   }
   componentWillReceiveProps(nextProps) {
     this.column = this.initColumn(nextProps);
-    if (
-      nextProps.value !== this.props.value ||
-      nextProps.focused !== this.props.focused ||
-      nextProps.hasFocus !== this.props.hasFocus
-    ) {
-      let value = this.state.value;
-      if (isObject(nextProps.value)) {
-        value = {
-          ...nextProps.value,
-          editedValue: !nextProps.focused
-            ? undefined
-            : this.state.value.editedValue
-        };
-      } else {
-        value.value = nextProps.value;
-        value.caption = formatValue(
-          nextProps,
-          nextProps.value,
-          nextProps.focused
-        );
-        // value.editedValue =
-        //   !nextProps.focused && nextProps.inputType === "cell"
-        //     ? undefined
-        //     : this.state.value.editedValue;
-        value.editedValue = undefined;
+    if (nextProps.inputType === "cell") {
+      if (
+        nextProps.value !== this.props.value ||
+        nextProps.focused !== this.props.focused ||
+        nextProps.hasFocus !== this.props.hasFocus
+      ) {
+        let value = this.state.value;
+        if (isObject(nextProps.value)) {
+          value = {
+            ...nextProps.value,
+            editedValue: !nextProps.focused
+              ? undefined
+              : this.state.value.editedValue
+          };
+        } else {
+          value.value = nextProps.value;
+          value.caption = formatValue(
+            nextProps,
+            nextProps.value,
+            nextProps.focused
+          );
+          // value.editedValue =
+          //   !nextProps.focused && nextProps.inputType === "cell"
+          //     ? undefined
+          //     : this.state.value.editedValue;
+          value.editedValue = undefined;
+        }
+        this.setState({
+          value
+        });
       }
-      this.setState({
-        value
-      });
     }
   }
   initColumn = props => {
@@ -142,7 +144,8 @@ export class Input extends Component {
     const { handleChange, handleBlur, handleFocus } = this;
     let element = null;
     if (
-      !(editable && (hasFocus || this.props.column === undefined)) &&
+      // !(editable && (hasFocus || this.props.column === undefined)) &&
+      !(editable && hasFocus) &&
       column.dataType !== "boolean" &&
       inputType !== "filter"
     ) {

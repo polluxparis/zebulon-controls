@@ -103,7 +103,8 @@ export class EditableInput extends Component {
 			className,
 			inputType,
 			value,
-			innerStyle
+			innerStyle,
+			editable
 		} = this.props;
 
 		const style = {
@@ -128,6 +129,7 @@ export class EditableInput extends Component {
 				onFocus={handleFocus}
 				onBlur={handleBlur}
 				style={style}
+				readOnly={editable ? undefined : true}
 				value={
 					(value.editedValue === undefined
 						? ""
@@ -165,10 +167,14 @@ export class SelectInput extends Component {
 			options = options(props.row);
 		}
 		if (isMap(options)) {
-			options = Array.from(options).map(option => ({
-				id: option[0],
-				caption: option[1]
-			}));
+			options = Array.from(options).map(option => {
+				return {
+					id: option[0],
+					caption: isObject(option[1] && column.accessorFunction)
+						? column.accessorFunction({ row: option[1] })
+						: option[1]
+				};
+			});
 		} else if (isPromise(options)) {
 			options.then(options => {
 				props.select = options;

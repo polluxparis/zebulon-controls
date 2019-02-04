@@ -148,7 +148,7 @@ export class ScrollableGrid extends ScrollableArea {
         range,
         ok => {
           if (ok) {
-            this.setState({ selectedRange: range });
+            // this.setState({ selectedRange: range });
           }
         },
         undefined,
@@ -208,7 +208,7 @@ export class ScrollableGrid extends ScrollableArea {
       this.onScroll(
         axis_,
         -(axis === null && axis_ === AxisType.COLUMNS ? directionC : direction),
-        -directionColumn,
+        directionColumn ? -directionColumn : null,
         cell,
         extension
       );
@@ -450,7 +450,7 @@ export class ScrollableGrid extends ScrollableArea {
         shift = Math.min(0, column.position - position - this.lockedWidth);
       }
       // console.log("scroll", direction, shift, position);
-      changed = direction || changed;
+      changed = direction !== this.state.scroll.direction || changed;
       newScroll.columns = {
         index,
         direction,
@@ -502,7 +502,7 @@ export class ScrollableGrid extends ScrollableArea {
           startIndex = index - nRows + 1;
         }
       }
-      changed = direction || changed;
+      changed = direction !== this.state.scroll.direction || changed;
       newScroll.rows = {
         index,
         direction,
@@ -511,11 +511,13 @@ export class ScrollableGrid extends ScrollableArea {
       };
     }
     if (changed) {
-      this.setState({ scroll: newScroll });
+      // this.setState({ scroll: newScroll });
       if (this.props.onScroll) {
         if (this.props.onScroll(newScroll, cell, extension) === false) {
           return false;
         }
+      } else {
+        this.setState({ scroll: newScroll });
       }
       return true;
     }
@@ -585,9 +587,11 @@ export class ScrollableGrid extends ScrollableArea {
     }
     scroll[sense] = { index, direction, startIndex, shift, position };
     // console.log("wheel", scroll);
-    this.setState({ scroll });
+    // this.setState({ scroll });
     if (onScroll) {
       onScroll(scroll);
+    } else {
+      this.setState({ scroll });
     }
   };
   _getContent = () => {
@@ -600,9 +604,11 @@ export class ScrollableGrid extends ScrollableArea {
       if (rows[0]) {
         const columns = rows[0].props.children;
         if (Array.isArray(columns) && columns.length) {
-          columnIndex = (columns[columns.length - 1].props.column || {
-            index_: columns.length - 1
-          }).index_;
+          columnIndex = (
+            columns[columns.length - 1].props.column || {
+              index_: columns.length - 1
+            }
+          ).index_;
         }
       }
     }

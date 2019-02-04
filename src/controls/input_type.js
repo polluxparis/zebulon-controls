@@ -280,7 +280,7 @@ export class CheckBoxInput extends Component {
 		if (column.editable || inputType === "filter") {
 			if (inputType === "filter" && value.value === false) {
 				value.value = null;
-			} else if (this.props.focused || inputType !== "filter") {
+			} else if (this.props.focused || inputType === "filter") {
 				value.value = !value.value;
 			}
 			handleChange({ value, row, column, filterTo });

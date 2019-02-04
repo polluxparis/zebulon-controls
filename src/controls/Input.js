@@ -30,7 +30,10 @@ export class Input extends Component {
   }
   componentWillReceiveProps(nextProps) {
     this.column = this.initColumn(nextProps);
-    if (nextProps.inputType === "cell") {
+    if (
+      nextProps.inputType === "cell" ||
+      nextProps.value !== this.props.value
+    ) {
       if (
         nextProps.value !== this.props.value ||
         nextProps.focused !== this.props.focused ||
@@ -144,8 +147,8 @@ export class Input extends Component {
     const { handleChange, handleBlur, handleFocus } = this;
     let element = null;
     if (
-      // !(editable && (hasFocus || this.props.column === undefined)) &&
-      !(editable && hasFocus) &&
+      !((editable && hasFocus) || this.props.column === undefined) &&
+      // !(editable && hasFocus) &&
       column.dataType !== "boolean" &&
       inputType !== "filter"
     ) {

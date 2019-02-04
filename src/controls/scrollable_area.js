@@ -229,7 +229,6 @@ export class ScrollableArea extends Component {
         // style={this.props.style || {}}
         onMouseMove={this._handleMouseMove}
         onMouseUp={this._handleMouseUp}
-        // onKeyDown={e => this.console.log("KEYDOWN", e1)}
       >
         <div
           id="scrollable-area-v"
@@ -241,8 +240,25 @@ export class ScrollableArea extends Component {
             // width
           }}
         >
-          <div id="scrollable-area-content" style={style}>
-            {content}
+          <div
+            id="scrollable-area-content"
+            style={style}
+            onScroll={e => {
+              if (this.onScroll && e.target.scrollTop > 0) {
+                e.target.scrollTop = 0;
+                this.onScroll(
+                  // manage automatic scroll ???
+                  AxisType.ROWS,
+                  -1,
+                  null,
+                  this.selectedCell()
+                );
+              }
+              console.log("scroll area content", e.target.scrollTop, e);
+              return true;
+            }}
+          >
+            {content}r
           </div>
           <Scrollbar
             direction="vertical"
